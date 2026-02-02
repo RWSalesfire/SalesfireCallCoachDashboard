@@ -1,0 +1,65 @@
+import Link from 'next/link';
+import { sdrList } from '@/data/sampleData';
+
+export default function Home() {
+  const today = new Date().toISOString().split('T')[0];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white border-b border-sf-border">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <h1 className="text-3xl font-bold text-sf-dark">SDR Call Coaching</h1>
+          <p className="text-sf-secondary mt-2">
+            Daily and weekly call coaching insights for the Salesfire SDR team
+          </p>
+        </div>
+      </header>
+
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h2 className="text-xl font-semibold text-sf-dark mb-4">Select an SDR</h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {sdrList.map((sdr) => (
+            <Link
+              key={sdr.slug}
+              href={`/${sdr.slug}/${today}`}
+              className="bg-white rounded-xl p-6 shadow-card hover:shadow-card-hover transition-shadow duration-200 border border-sf-border/50"
+            >
+              <h3 className="text-lg font-semibold text-sf-body">{sdr.name}</h3>
+              <p className="text-sm text-sf-secondary mt-1">{sdr.email}</p>
+              <div className="mt-3 pt-3 border-t border-sf-border">
+                <p className="text-xs text-sf-secondary">
+                  BD Partner: {sdr.bdName}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-8 bg-sf-card rounded-xl p-6">
+          <h3 className="font-semibold text-sf-dark mb-3">URL Structure</h3>
+          <ul className="space-y-2 text-sm text-sf-body">
+            <li>
+              <span className="text-sf-secondary">Daily view:</span>{' '}
+              <code className="bg-white px-2 py-1 rounded text-xs">/[sdr-slug]/[date]</code>
+              <span className="text-sf-secondary ml-2">e.g., /katie/2026-02-03</span>
+            </li>
+            <li>
+              <span className="text-sf-secondary">Weekly view:</span>{' '}
+              <code className="bg-white px-2 py-1 rounded text-xs">/[sdr-slug]/week/[week-number]</code>
+              <span className="text-sf-secondary ml-2">e.g., /katie/week/5</span>
+            </li>
+          </ul>
+        </div>
+      </main>
+
+      <footer className="bg-white border-t border-sf-border mt-auto">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <p className="text-sm text-sf-secondary text-center">
+            Salesfire Call Coaching Dashboard
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+}

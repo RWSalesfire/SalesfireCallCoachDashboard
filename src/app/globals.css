@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --sf-dark: #2D1B4E;
+  --sf-good: #5EECD4;
+  --sf-focus: #FFB8C0;
+  --sf-alert: #E57373;
+  --sf-card: #F8F4FC;
+  --sf-card-alt: #FFF5DC;
+  --sf-body: #1A1A2E;
+  --sf-secondary: #6B7280;
+  --sf-border: #E5E7EB;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--sf-body);
+  background-color: #ffffff;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
