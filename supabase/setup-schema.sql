@@ -118,6 +118,9 @@ CREATE TABLE call_analyses (
   talk_time_percent DECIMAL(4,1),
   talk_speed_wpm INTEGER,
   longest_monologue_secs INTEGER,
+  customer_story_secs INTEGER,
+  patience_secs INTEGER,
+  area_breakdown JSONB,
   flags JSONB,
   raw_analysis JSONB,
   created_at TIMESTAMPTZ DEFAULT now()

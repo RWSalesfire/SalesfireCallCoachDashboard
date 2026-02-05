@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { DashboardData } from '@/types';
 import ViewToggle from '@/components/ui/ViewToggle';
 import DailyView from '@/components/daily/DailyView';
@@ -38,7 +39,12 @@ export default function Dashboard({ data, initialView = 'daily' }: DashboardProp
                   : `Week ${data.weeklyData.weekNumber}, 2026`}
               </p>
             </div>
-            <ViewToggle currentView={currentView} onViewChange={setCurrentView} />
+            <div className="flex items-center gap-4">
+              <Link href="/team" className="text-sm text-sf-secondary hover:text-sf-dark">
+                Team
+              </Link>
+              <ViewToggle currentView={currentView} onViewChange={setCurrentView} />
+            </div>
           </div>
         </div>
       </header>

@@ -1,3 +1,27 @@
+export interface CallMetrics {
+  talkTime: number;
+  talkSpeed: number;
+  monologue?: number;
+  customerStory?: number;
+  patience?: number;
+}
+
+export interface AreaBreakdownItem {
+  score: number;
+  why: string;
+  well: string;
+  improve: string;
+  tryNext: string;
+}
+
+export interface FocusPriority {
+  rank: 1 | 2 | 3;
+  area: string;
+  areaLabel: string;
+  avgScore: number;
+  tryNext: string;
+}
+
 export interface Call {
   id: string;
   company: string;
@@ -18,6 +42,8 @@ export interface Call {
     objections: number | 'N/A';
     close: number;
   };
+  metrics?: CallMetrics;
+  areaBreakdown?: Record<string, AreaBreakdownItem>;
   keyMoment?: string;
   improvement?: string;
 }

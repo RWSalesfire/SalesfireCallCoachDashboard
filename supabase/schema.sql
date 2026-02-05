@@ -82,6 +82,11 @@ CREATE TABLE call_analyses (
     longest_monologue_seconds INTEGER,
     listening_time_seconds INTEGER,
     talk_speed_wpm INTEGER,
+    customer_story_secs INTEGER,
+    patience_secs INTEGER,
+
+    -- Detailed area breakdown
+    area_breakdown JSONB,
 
     -- Raw analysis JSON from Claude (for reference)
     raw_analysis JSONB,

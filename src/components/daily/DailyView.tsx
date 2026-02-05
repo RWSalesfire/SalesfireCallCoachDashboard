@@ -4,6 +4,8 @@ import { DashboardData } from '@/types';
 import StatCard from '@/components/ui/StatCard';
 import DailyCallCard from './DailyCallCard';
 import FocusBanner from './FocusBanner';
+import FocusPriorityCards from './FocusPriorityCards';
+import { calculateFocusPriorities } from '@/lib/focusCalculation';
 
 interface DailyViewProps {
   data: DashboardData;
@@ -13,6 +15,7 @@ export default function DailyView({ data }: DailyViewProps) {
   const { dailyStats, yesterdaysCalls, focusToday, teamAvgConnectionRate } = data;
 
   const isAboveAverage = dailyStats.connectionRate > teamAvgConnectionRate;
+  const focusPriorities = calculateFocusPriorities(data.weeklyData.calls);
 
   return (
     <div className="space-y-8">
@@ -43,6 +46,13 @@ export default function DailyView({ data }: DailyViewProps) {
           />
         </div>
       </section>
+
+      {/* 3 Things to Focus On */}
+      {focusPriorities.length > 0 && (
+        <section>
+          <FocusPriorityCards priorities={focusPriorities} />
+        </section>
+      )}
 
       {/* Yesterday's Calls */}
       <section>

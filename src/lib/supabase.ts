@@ -75,6 +75,9 @@ export interface CallAnalysis {
   talk_time_percent: number | null;
   talk_speed_wpm: number | null;
   longest_monologue_secs: number | null;
+  customer_story_secs: number | null;
+  patience_secs: number | null;
+  area_breakdown: Record<string, { score: number; why: string; well: string; improve: string; try_next: string }> | null;
   created_at: string;
 }
 

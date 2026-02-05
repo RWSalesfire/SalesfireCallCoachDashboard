@@ -177,6 +177,19 @@ function convertCallAnalysis(analysis: CallAnalysis & { call: { company: string;
       objections: analysis.objections_score ?? 'N/A',
       close: analysis.close_score || 0,
     },
+    metrics: (analysis.talk_time_percent != null || analysis.talk_speed_wpm != null) ? {
+      talkTime: analysis.talk_time_percent || 0,
+      talkSpeed: analysis.talk_speed_wpm || 0,
+      monologue: analysis.longest_monologue_secs ?? undefined,
+      customerStory: analysis.customer_story_secs ?? undefined,
+      patience: analysis.patience_secs ?? undefined,
+    } : undefined,
+    areaBreakdown: analysis.area_breakdown ? Object.fromEntries(
+      Object.entries(analysis.area_breakdown).map(([key, val]) => [
+        key,
+        { score: val.score, why: val.why, well: val.well, improve: val.improve, tryNext: val.try_next },
+      ])
+    ) : undefined,
     keyMoment: analysis.key_moment || undefined,
     improvement: analysis.improvement || undefined,
   };

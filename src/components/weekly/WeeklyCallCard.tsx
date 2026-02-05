@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Call } from '@/types';
 import ScoreBadge from '@/components/ui/ScoreBadge';
 import OutcomeBadge from '@/components/ui/OutcomeBadge';
+import MetricsRow from './MetricsRow';
+import AreaBreakdownSection from './AreaBreakdownSection';
 
 interface WeeklyCallCardProps {
   call: Call;
@@ -88,11 +90,27 @@ export default function WeeklyCallCard({ call }: WeeklyCallCardProps) {
       {/* Expanded content */}
       {isExpanded && call.scores && (
         <div className="px-4 pb-4 pt-2 border-t border-sf-border/50 space-y-4">
+          {/* Call Metrics */}
+          {call.metrics && (
+            <div>
+              <h4 className="text-sm font-medium text-sf-secondary mb-2">Call Metrics</h4>
+              <MetricsRow metrics={call.metrics} />
+            </div>
+          )}
+
           {/* Score grid */}
           <div>
             <h4 className="text-sm font-medium text-sf-secondary mb-2">Scores</h4>
             <ScoreGrid scores={call.scores} />
           </div>
+
+          {/* Area Breakdowns */}
+          {call.areaBreakdown && Object.keys(call.areaBreakdown).length > 0 && (
+            <div>
+              <h4 className="text-sm font-medium text-sf-secondary mb-2">Area Breakdowns</h4>
+              <AreaBreakdownSection breakdown={call.areaBreakdown} />
+            </div>
+          )}
 
           {/* Key Moment */}
           {call.keyMoment && (
