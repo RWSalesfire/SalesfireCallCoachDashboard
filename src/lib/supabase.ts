@@ -62,8 +62,11 @@ export interface CallAnalysis {
   overall_score: number | null;
   gatekeeper_score: number | null;
   opener_score: number | null;
+  personalisation_score: number | null;
   discovery_score: number | null;
-  the_why_score: number | null;
+  call_control_score: number | null;
+  tone_energy_score: number | null;
+  value_prop_score: number | null;
   objections_score: number | null;
   close_score: number | null;
   insight: string | null;
@@ -112,8 +115,11 @@ export interface WeeklySummary {
   overall_change: number | null;
   avg_gatekeeper: number | null;
   avg_opener: number | null;
+  avg_personalisation: number | null;
   avg_discovery: number | null;
-  avg_the_why: number | null;
+  avg_call_control: number | null;
+  avg_tone_energy: number | null;
+  avg_value_prop: number | null;
   avg_objections: number | null;
   avg_close: number | null;
   focus_area_name: string | null;

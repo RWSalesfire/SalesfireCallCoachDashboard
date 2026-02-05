@@ -13,8 +13,11 @@ function ScoreGrid({ scores }: { scores: NonNullable<Call['scores']> }) {
   const scoreItems = [
     { label: 'Gate', value: scores.gatekeeper },
     { label: 'Open', value: scores.opener },
+    { label: 'Pers', value: scores.personalisation },
     { label: 'Disc', value: scores.discovery },
-    { label: 'WHY', value: scores.theWhy },
+    { label: 'Ctrl', value: scores.callControl },
+    { label: 'Tone', value: scores.toneEnergy },
+    { label: 'VP', value: scores.valueProp },
     { label: 'Obj', value: scores.objections },
     { label: 'Close', value: scores.close },
   ];
@@ -27,7 +30,7 @@ function ScoreGrid({ scores }: { scores: NonNullable<Call['scores']> }) {
   };
 
   return (
-    <div className="grid grid-cols-6 gap-2">
+    <div className="grid grid-cols-3 sm:grid-cols-9 gap-2">
       {scoreItems.map((item) => (
         <div key={item.label} className="text-center">
           <div className="text-xs text-sf-secondary mb-1">{item.label}</div>

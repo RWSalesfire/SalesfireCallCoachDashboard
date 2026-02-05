@@ -10,8 +10,11 @@ export interface Call {
   scores?: {
     gatekeeper: number | 'N/A';
     opener: number;
+    personalisation: number | 'N/A';
     discovery: number;
-    theWhy: number;
+    callControl: number | 'N/A';
+    toneEnergy: number | 'N/A';
+    valueProp: number;
     objections: number | 'N/A';
     close: number;
   };
@@ -50,8 +53,11 @@ export interface ProgressDataPoint {
 export interface RadarScores {
   gatekeeper: number;
   opener: number;
+  personalisation: number;
   discovery: number;
-  theWhy: number;
+  callControl: number;
+  toneEnergy: number;
+  valueProp: number;
   objections: number;
   close: number;
 }

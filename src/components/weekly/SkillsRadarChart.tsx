@@ -19,8 +19,11 @@ export default function SkillsRadarChart({ scores }: SkillsRadarChartProps) {
   const data = [
     { subject: 'Gatekeeper', score: scores.gatekeeper, fullMark: 10 },
     { subject: 'Opener', score: scores.opener, fullMark: 10 },
+    { subject: 'Personalisation', score: scores.personalisation, fullMark: 10 },
     { subject: 'Discovery', score: scores.discovery, fullMark: 10 },
-    { subject: 'The WHY', score: scores.theWhy, fullMark: 10 },
+    { subject: 'Call Control', score: scores.callControl, fullMark: 10 },
+    { subject: 'Tone & Energy', score: scores.toneEnergy, fullMark: 10 },
+    { subject: 'Value Prop', score: scores.valueProp, fullMark: 10 },
     { subject: 'Objections', score: scores.objections, fullMark: 10 },
     { subject: 'Close', score: scores.close, fullMark: 10 },
   ];
@@ -28,13 +31,13 @@ export default function SkillsRadarChart({ scores }: SkillsRadarChartProps) {
   return (
     <div className="bg-white rounded-xl p-6 shadow-card">
       <h3 className="text-lg font-semibold text-sf-dark mb-4">Skills Overview</h3>
-      <div className="h-[300px] w-full">
+      <div className="h-[350px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <RadarChart data={data} cx="50%" cy="50%" outerRadius="70%">
+          <RadarChart data={data} cx="50%" cy="50%" outerRadius="65%">
             <PolarGrid stroke="#E5E7EB" />
             <PolarAngleAxis
               dataKey="subject"
-              tick={{ fill: '#6B7280', fontSize: 12 }}
+              tick={{ fill: '#6B7280', fontSize: 11 }}
             />
             <PolarRadiusAxis
               angle={30}

@@ -189,7 +189,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
         overallChange: 0.6,
         avgFocusArea: 5.2,
         focusAreaChange: 0.7,
-        focusAreaName: 'The WHY',
+        focusAreaName: 'Value Prop',
         calls: [
           {
             id: 'k1',
@@ -200,8 +200,8 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'demo',
             overall: 7.0,
             insight: 'Strong close after good discovery',
-            scores: { gatekeeper: 'N/A', opener: 7, discovery: 7, theWhy: 6, objections: 'N/A', close: 8 },
-            keyMoment: "Asked 'What would that mean for you guys?' - the WHY connection clicking",
+            scores: { gatekeeper: 'N/A', opener: 7, personalisation: 6, discovery: 7, callControl: 6, toneEnergy: 7, valueProp: 6, objections: 'N/A', close: 8 },
+            keyMoment: "Asked 'What would that mean for you guys?' - the value prop connection clicking",
             improvement: "High talk time (72%) - let Raj talk more even though he was quiet"
           },
           {
@@ -213,7 +213,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'not_interested',
             overall: 5.2,
             insight: 'Kept explaining features instead of asking questions',
-            scores: { gatekeeper: 'N/A', opener: 6, discovery: 5, theWhy: 4, objections: 5, close: 5 },
+            scores: { gatekeeper: 'N/A', opener: 6, personalisation: 5, discovery: 5, callControl: 5, toneEnergy: 6, valueProp: 4, objections: 5, close: 5 },
             keyMoment: "Grant showed interest when mentioning Klaviyo integration",
             improvement: "When Grant said 'feels like duplicate' - should have asked 'what specifically does your current tool do for email flows?'"
           },
@@ -226,7 +226,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'demo',
             overall: 7.5,
             insight: 'Great use of case studies and confident close',
-            scores: { gatekeeper: 8, opener: 7, discovery: 8, theWhy: 7, objections: 7, close: 8 },
+            scores: { gatekeeper: 8, opener: 7, personalisation: 7, discovery: 8, callControl: 7, toneEnergy: 8, valueProp: 7, objections: 7, close: 8 },
             keyMoment: "Connected Moda in Pelle case study to Emma's fashion context perfectly",
             improvement: "Could have asked one more question before moving to close"
           },
@@ -239,7 +239,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'email',
             overall: 5.7,
             insight: 'Lisa did the WHY connection herself - missed chance to reinforce',
-            scores: { gatekeeper: 'N/A', opener: 6, discovery: 6, theWhy: 5, objections: 'N/A', close: 5 },
+            scores: { gatekeeper: 'N/A', opener: 6, personalisation: 5, discovery: 6, callControl: 5, toneEnergy: 6, valueProp: 5, objections: 'N/A', close: 5 },
             keyMoment: "Lisa mentioned corporate gifting challenge - good discovery",
             improvement: "When Lisa said 'that would help with corporate orders' - should have built on that instead of moving on"
           },
@@ -252,12 +252,12 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'warm_lead',
             overall: 6.2,
             insight: 'Good rapport but lost control at the end',
-            scores: { gatekeeper: 7, opener: 6, discovery: 7, theWhy: 5, objections: 6, close: 5 },
+            scores: { gatekeeper: 7, opener: 6, personalisation: 6, discovery: 7, callControl: 6, toneEnergy: 6, valueProp: 5, objections: 6, close: 5 },
             keyMoment: "Good question about their current Klaviyo setup",
             improvement: "Should have asked who else needs to be in the meeting instead of accepting 'I'll check'"
           }
         ],
-        radarScores: { gatekeeper: 7.5, opener: 6.4, discovery: 6.6, theWhy: 5.4, objections: 6.0, close: 6.2 },
+        radarScores: { gatekeeper: 7.5, opener: 6.4, personalisation: 5.8, discovery: 6.6, callControl: 5.8, toneEnergy: 6.6, valueProp: 5.4, objections: 6.0, close: 6.2 },
         progressData: [
           { week: 2, overall: 5.5, focusArea: 4.2, close: 5.0 },
           { week: 3, overall: 5.7, focusArea: 4.5, close: 5.2 },
@@ -333,7 +333,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'demo',
             overall: 7.2,
             insight: 'Strong gatekeeper work and good WHY',
-            scores: { gatekeeper: 8, opener: 7, discovery: 7, theWhy: 7, objections: 'N/A', close: 7 },
+            scores: { gatekeeper: 8, opener: 7, personalisation: 7, discovery: 7, callControl: 7, toneEnergy: 7, valueProp: 7, objections: 'N/A', close: 7 },
             keyMoment: "Connected cross-device tracking to their mobile-first customer base brilliantly",
             improvement: "Could have pushed for a specific demo time instead of 'sometime next week'"
           },
@@ -346,7 +346,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'email',
             overall: 6.0,
             insight: 'Settled for email when could have pushed',
-            scores: { gatekeeper: 'N/A', opener: 6, discovery: 7, theWhy: 6, objections: 5, close: 5 },
+            scores: { gatekeeper: 'N/A', opener: 6, personalisation: 6, discovery: 7, callControl: 6, toneEnergy: 6, valueProp: 6, objections: 5, close: 5 },
             keyMoment: "Good question about their Klaviyo abandoned cart performance",
             improvement: "When Rachel said 'send me something' - should have asked 'what specifically would make you want to take a call?'"
           },
@@ -359,7 +359,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'demo',
             overall: 7.8,
             insight: 'Textbook handling of competitor objection',
-            scores: { gatekeeper: 7, opener: 8, discovery: 8, theWhy: 8, objections: 8, close: 7 },
+            scores: { gatekeeper: 7, opener: 8, personalisation: 7, discovery: 8, callControl: 8, toneEnergy: 8, valueProp: 8, objections: 8, close: 7 },
             keyMoment: "When James said 'we have Nosto', Sally asked 'what does it do for your email abandonment flows?' - James realized the gap",
             improvement: "Strong call overall - keep practicing this pattern"
           },
@@ -372,12 +372,12 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'not_interested',
             overall: 5.8,
             insight: 'Good opener but rushed to features too quickly',
-            scores: { gatekeeper: 'N/A', opener: 7, discovery: 5, theWhy: 5, objections: 6, close: 5 },
+            scores: { gatekeeper: 'N/A', opener: 7, personalisation: 5, discovery: 5, callControl: 5, toneEnergy: 6, valueProp: 5, objections: 6, close: 5 },
             keyMoment: "Tom mentioned they just switched ESPs - timing opportunity",
             improvement: "Instead of explaining Salesfire, should have asked 'what prompted the switch?'"
           }
         ],
-        radarScores: { gatekeeper: 7.5, opener: 7.0, discovery: 6.8, theWhy: 6.5, objections: 6.3, close: 6.0 },
+        radarScores: { gatekeeper: 7.5, opener: 7.0, personalisation: 6.3, discovery: 6.8, callControl: 6.5, toneEnergy: 6.8, valueProp: 6.5, objections: 6.3, close: 6.0 },
         progressData: [
           { week: 2, overall: 5.8, focusArea: 5.0, close: 5.0 },
           { week: 3, overall: 6.2, focusArea: 5.5, close: 5.5 },
@@ -463,7 +463,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'demo',
             overall: 8.1,
             insight: 'Best call this week - patience paid off',
-            scores: { gatekeeper: 8, opener: 8, discovery: 9, theWhy: 8, objections: 'N/A', close: 8 },
+            scores: { gatekeeper: 8, opener: 8, personalisation: 8, discovery: 9, callControl: 8, toneEnergy: 8, valueProp: 8, objections: 'N/A', close: 8 },
             keyMoment: "Paused after Amanda mentioned their cookie challenges - she talked for 90 seconds and sold herself on needing to change",
             improvement: "Perfect example of letting silence work - keep doing this"
           },
@@ -476,7 +476,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'warm_lead',
             overall: 6.5,
             insight: 'Good discovery but WHY connection was weak',
-            scores: { gatekeeper: 'N/A', opener: 7, discovery: 7, theWhy: 5, objections: 6, close: 6 },
+            scores: { gatekeeper: 'N/A', opener: 7, personalisation: 6, discovery: 7, callControl: 6, toneEnergy: 7, valueProp: 5, objections: 6, close: 6 },
             keyMoment: "Dan opened up about their traffic vs conversion gap",
             improvement: "After Dan mentioned the gap, should have asked 'what would closing that gap mean for your monthly targets?'"
           },
@@ -489,7 +489,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'demo',
             overall: 7.3,
             insight: 'Great pivot on budget objection',
-            scores: { gatekeeper: 7, opener: 7, discovery: 7, theWhy: 7, objections: 8, close: 7 },
+            scores: { gatekeeper: 7, opener: 7, personalisation: 7, discovery: 7, callControl: 7, toneEnergy: 7, valueProp: 7, objections: 8, close: 7 },
             keyMoment: "When Claire said 'we're cutting budget', Jack responded perfectly: 'this isn't additional spend, it's recovering revenue'",
             improvement: "Could have asked about their current recovery rate to make it more concrete"
           },
@@ -502,7 +502,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'email',
             overall: 6.0,
             insight: 'Good reading of the situation but no concrete next step',
-            scores: { gatekeeper: 'N/A', opener: 6, discovery: 7, theWhy: 5, objections: 5, close: 5 },
+            scores: { gatekeeper: 'N/A', opener: 6, personalisation: 5, discovery: 7, callControl: 6, toneEnergy: 6, valueProp: 5, objections: 5, close: 5 },
             keyMoment: "Laura mentioned they're reviewing all vendors in Q2",
             improvement: "Should have asked 'when in Q2 are you making decisions? Let's book a call for [specific date]'"
           },
@@ -515,7 +515,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'demo',
             overall: 7.0,
             insight: 'Solid all-round call',
-            scores: { gatekeeper: 7, opener: 7, discovery: 7, theWhy: 7, objections: 'N/A', close: 7 },
+            scores: { gatekeeper: 7, opener: 7, personalisation: 7, discovery: 7, callControl: 7, toneEnergy: 7, valueProp: 7, objections: 'N/A', close: 7 },
             keyMoment: "Good use of Charles Clinkard case study in context",
             improvement: "Practice connecting case study results to their specific situation"
           },
@@ -528,12 +528,12 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'not_interested',
             overall: 5.5,
             insight: 'Sophie had already evaluated Salesfire before - need to research accounts',
-            scores: { gatekeeper: 'N/A', opener: 6, discovery: 5, theWhy: 5, objections: 5, close: 5 },
+            scores: { gatekeeper: 'N/A', opener: 6, personalisation: 4, discovery: 5, callControl: 5, toneEnergy: 6, valueProp: 5, objections: 5, close: 5 },
             keyMoment: "Sophie revealed they looked at Salesfire 6 months ago",
             improvement: "Research call history before calling - could have addressed what changed since then"
           }
         ],
-        radarScores: { gatekeeper: 7.3, opener: 6.8, discovery: 7.0, theWhy: 6.2, objections: 6.0, close: 6.3 },
+        radarScores: { gatekeeper: 7.3, opener: 6.8, personalisation: 6.2, discovery: 7.0, callControl: 6.5, toneEnergy: 6.8, valueProp: 6.2, objections: 6.0, close: 6.3 },
         progressData: [
           { week: 2, overall: 5.6, focusArea: 5.5, close: 5.2 },
           { week: 3, overall: 5.9, focusArea: 5.9, close: 5.5 },
@@ -609,7 +609,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'demo',
             overall: 6.8,
             insight: 'Energy was great, discovery could be deeper',
-            scores: { gatekeeper: 'N/A', opener: 7, discovery: 6, theWhy: 7, objections: 'N/A', close: 7 },
+            scores: { gatekeeper: 'N/A', opener: 7, personalisation: 6, discovery: 6, callControl: 6, toneEnergy: 7, valueProp: 7, objections: 'N/A', close: 7 },
             keyMoment: "Good use of milk carton hook - Kelly was immediately curious",
             improvement: "Asked two discovery questions then moved to pitch - should have asked 3-4 more"
           },
@@ -622,7 +622,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'email',
             overall: 5.5,
             insight: 'Rushed to close before value was established',
-            scores: { gatekeeper: 'N/A', opener: 6, discovery: 5, theWhy: 5, objections: 5, close: 5 },
+            scores: { gatekeeper: 'N/A', opener: 6, personalisation: 5, discovery: 5, callControl: 5, toneEnergy: 6, valueProp: 5, objections: 5, close: 5 },
             keyMoment: "Michelle mentioned they're not happy with current email performance",
             improvement: "When Michelle mentioned email issues, should have dug deeper: 'What specifically isn't working?'"
           },
@@ -635,7 +635,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'demo',
             overall: 7.4,
             insight: 'Perfect handling of internal tool objection',
-            scores: { gatekeeper: 8, opener: 7, discovery: 7, theWhy: 7, objections: 8, close: 7 },
+            scores: { gatekeeper: 8, opener: 7, personalisation: 7, discovery: 7, callControl: 7, toneEnergy: 7, valueProp: 7, objections: 8, close: 7 },
             keyMoment: "When Pete said 'we built something', Steph asked 'what does it track? Cross-device? Outside the cookie window?' - Pete realized gaps",
             improvement: "Great call - this is the pattern to repeat"
           },
@@ -648,7 +648,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'warm_lead',
             overall: 6.2,
             insight: 'Good rapport but lost momentum mid-call',
-            scores: { gatekeeper: 7, opener: 7, discovery: 6, theWhy: 6, objections: 'N/A', close: 5 },
+            scores: { gatekeeper: 7, opener: 7, personalisation: 6, discovery: 6, callControl: 5, toneEnergy: 6, valueProp: 6, objections: 'N/A', close: 5 },
             keyMoment: "Hannah engaged well with the cross-device story",
             improvement: "Mid-call went quiet - should have asked more questions to keep Hannah talking"
           },
@@ -661,12 +661,12 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
             outcome: 'not_interested',
             overall: 5.2,
             insight: 'Andrew was dismissive from the start - gatekeeper skills needed',
-            scores: { gatekeeper: 5, opener: 5, discovery: 5, theWhy: 5, objections: 5, close: 5 },
+            scores: { gatekeeper: 5, opener: 5, personalisation: 4, discovery: 5, callControl: 4, toneEnergy: 4, valueProp: 5, objections: 5, close: 5 },
             keyMoment: "Andrew asked 'who are you?' in dismissive tone - Steph got flustered",
             improvement: "Practice confident response to dismissive gatekeepers: 'It's Steph from Salesfire - I work with [competitor] and wanted to share something quick'"
           }
         ],
-        radarScores: { gatekeeper: 6.7, opener: 6.4, discovery: 5.8, theWhy: 6.0, objections: 6.0, close: 5.8 },
+        radarScores: { gatekeeper: 6.7, opener: 6.4, personalisation: 5.6, discovery: 5.8, callControl: 5.4, toneEnergy: 6.0, valueProp: 6.0, objections: 6.0, close: 5.8 },
         progressData: [
           { week: 2, overall: 5.4, focusArea: 5.2, close: 5.0 },
           { week: 3, overall: 5.6, focusArea: 5.5, close: 5.2 },

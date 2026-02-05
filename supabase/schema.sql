@@ -64,8 +64,11 @@ CREATE TABLE call_analyses (
     -- Individual skill scores (nullable for N/A)
     gatekeeper_score DECIMAL(3, 1) CHECK (gatekeeper_score IS NULL OR (gatekeeper_score >= 0 AND gatekeeper_score <= 10)),
     opener_score DECIMAL(3, 1) CHECK (opener_score >= 0 AND opener_score <= 10),
+    personalisation_score DECIMAL(3, 1) CHECK (personalisation_score IS NULL OR (personalisation_score >= 0 AND personalisation_score <= 10)),
     discovery_score DECIMAL(3, 1) CHECK (discovery_score >= 0 AND discovery_score <= 10),
-    the_why_score DECIMAL(3, 1) CHECK (the_why_score >= 0 AND the_why_score <= 10),
+    call_control_score DECIMAL(3, 1) CHECK (call_control_score IS NULL OR (call_control_score >= 0 AND call_control_score <= 10)),
+    tone_energy_score DECIMAL(3, 1) CHECK (tone_energy_score IS NULL OR (tone_energy_score >= 0 AND tone_energy_score <= 10)),
+    value_prop_score DECIMAL(3, 1) CHECK (value_prop_score >= 0 AND value_prop_score <= 10),
     objections_score DECIMAL(3, 1) CHECK (objections_score IS NULL OR (objections_score >= 0 AND objections_score <= 10)),
     close_score DECIMAL(3, 1) CHECK (close_score >= 0 AND close_score <= 10),
 
@@ -109,8 +112,11 @@ CREATE TABLE weekly_summaries (
     avg_overall DECIMAL(3, 1),
     avg_gatekeeper DECIMAL(3, 1),
     avg_opener DECIMAL(3, 1),
+    avg_personalisation DECIMAL(3, 1),
     avg_discovery DECIMAL(3, 1),
-    avg_the_why DECIMAL(3, 1),
+    avg_call_control DECIMAL(3, 1),
+    avg_tone_energy DECIMAL(3, 1),
+    avg_value_prop DECIMAL(3, 1),
     avg_objections DECIMAL(3, 1),
     avg_close DECIMAL(3, 1),
 
