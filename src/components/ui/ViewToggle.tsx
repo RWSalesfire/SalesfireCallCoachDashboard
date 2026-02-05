@@ -17,7 +17,7 @@ export default function ViewToggle({ currentView, onViewChange }: ViewToggleProp
             : 'text-sf-body hover:bg-white/50'}
         `}
       >
-        Daily
+        Overview
       </button>
       <button
         onClick={() => onViewChange('weekly')}
