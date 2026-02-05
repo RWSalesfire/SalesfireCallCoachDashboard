@@ -44,21 +44,6 @@ export default function Home() {
           ))}
         </div>
 
-        <div className="mt-8 bg-sf-card rounded-xl p-6">
-          <h3 className="font-semibold text-sf-dark mb-3">URL Structure</h3>
-          <ul className="space-y-2 text-sm text-sf-body">
-            <li>
-              <span className="text-sf-secondary">Daily view:</span>{' '}
-              <code className="bg-white px-2 py-1 rounded text-xs">/[sdr-slug]/[date]</code>
-              <span className="text-sf-secondary ml-2">e.g., /katie/2026-02-03</span>
-            </li>
-            <li>
-              <span className="text-sf-secondary">Weekly view:</span>{' '}
-              <code className="bg-white px-2 py-1 rounded text-xs">/[sdr-slug]/week/[week-number]</code>
-              <span className="text-sf-secondary ml-2">e.g., /katie/week/5</span>
-            </li>
-          </ul>
-        </div>
       </main>
 
       <footer className="bg-white border-t border-sf-border mt-auto">
