@@ -3,5 +3,9 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "installCommand": "npm install",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "crons": [
+    { "path": "/api/cron/analyze-calls", "schedule": "*/15 * * * *" },
+    { "path": "/api/cron/aggregate-daily", "schedule": "0 6 * * *" }
+  ]
 }
