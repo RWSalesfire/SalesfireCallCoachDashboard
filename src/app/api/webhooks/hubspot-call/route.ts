@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
     .from('calls')
     .upsert(
       {
-        hubspot_call_id: String(hubspotCallId),
+        hubspot_call_id: Number(hubspotCallId),
         sdr_id: sdr.id,
         company: (body.company as string) || 'Unknown Company',
         prospect_name: (body.prospect_name as string) || null,
