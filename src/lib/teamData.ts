@@ -16,6 +16,7 @@ export interface TeamSuperpower {
   sdrName: string;
   sdrSlug: string;
   score: number;
+  trend: number; // weekly change (positive = improving, negative = declining)
 }
 
 export interface TeamOverviewData {
@@ -58,6 +59,18 @@ export function getTeamOverviewData(date: string): TeamOverviewData {
   // Sort by avgOverall descending for leaderboard
   sdrs.sort((a, b) => b.avgOverall - a.avgOverall);
 
+  // Deterministic weekly trend values per area (sample data)
+  const SAMPLE_TRENDS: Record<string, number> = {
+    opener: 0.3,
+    personalisation: -0.1,
+    discovery: 0.4,
+    callControl: 0.2,
+    toneEnergy: -0.2,
+    valueProp: 0.5,
+    objections: 0.1,
+    close: -0.3,
+  };
+
   // Find superpowers (best SDR per area, excluding gatekeeper)
   const superpowers: TeamSuperpower[] = SUPERPOWER_AREAS.map((area) => {
     let best = { name: '', slug: '', score: 0 };
@@ -73,6 +86,7 @@ export function getTeamOverviewData(date: string): TeamOverviewData {
       sdrName: best.name,
       sdrSlug: best.slug,
       score: best.score,
+      trend: SAMPLE_TRENDS[area] || 0,
     };
   });
 

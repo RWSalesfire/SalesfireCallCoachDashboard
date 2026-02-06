@@ -6,6 +6,29 @@ interface SuperpowersGridProps {
   superpowers: TeamSuperpower[];
 }
 
+function TrendIndicator({ trend }: { trend: number }) {
+  if (trend === 0) return null;
+  const isUp = trend > 0;
+  return (
+    <span
+      className={`inline-flex items-center gap-0.5 text-xs font-medium ${
+        isUp ? 'text-sf-good' : 'text-red-500'
+      }`}
+    >
+      <svg
+        width="10"
+        height="10"
+        viewBox="0 0 10 10"
+        fill="currentColor"
+        className={isUp ? '' : 'rotate-180'}
+      >
+        <path d="M5 1L9 7H1L5 1Z" />
+      </svg>
+      {Math.abs(trend).toFixed(1)}
+    </span>
+  );
+}
+
 export default function SuperpowersGrid({ superpowers }: SuperpowersGridProps) {
   return (
     <div>
@@ -20,7 +43,10 @@ export default function SuperpowersGrid({ superpowers }: SuperpowersGridProps) {
               {sp.areaLabel}
             </p>
             <p className="text-lg font-semibold text-sf-dark">{sp.sdrName.split(' ')[0]}</p>
-            <p className="text-2xl font-bold text-sf-good">{sp.score.toFixed(1)}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-2xl font-bold text-sf-good">{sp.score.toFixed(1)}</p>
+              <TrendIndicator trend={sp.trend} />
+            </div>
           </div>
         ))}
       </div>
