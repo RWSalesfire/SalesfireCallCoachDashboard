@@ -37,11 +37,18 @@ function mapOutcome(raw: string | null | undefined): string | null {
   return OUTCOME_MAP[lower] || null;
 }
 
-function parseDuration(value: unknown): number {
+function parseDurationMs(value: unknown): number {
   const num = Number(value);
   if (isNaN(num) || num <= 0) return 0;
-  // HubSpot sometimes sends milliseconds — if > 10000 assume ms
-  return num > 10000 ? Math.round(num / 1000) : Math.round(num);
+  // HubSpot sometimes sends milliseconds — if > 10000 assume already ms
+  return num > 10000 ? Math.round(num) : Math.round(num * 1000);
+}
+
+function formatDuration(ms: number): string {
+  const totalSecs = Math.round(ms / 1000);
+  const m = Math.floor(totalSecs / 60);
+  const s = totalSecs % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 function parseCallDate(value: unknown): string {
@@ -60,12 +67,6 @@ function parseCallDate(value: unknown): string {
   }
 
   return new Date().toISOString().split('T')[0];
-}
-
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 export async function POST(request: NextRequest) {
@@ -117,10 +118,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const durationSeconds = parseDuration(body.duration_seconds);
+  const durationMs = parseDurationMs(body.duration_seconds);
   const callDate = parseCallDate(body.call_date);
   const transcript = (body.transcript as string) || null;
-  const outcome = mapOutcome(body.outcome as string);
+  const disposition = mapOutcome(body.outcome as string);
 
   // Upsert call (dedup on hubspot_call_id)
   const { data: call, error: callError } = await supabase
@@ -132,8 +133,13 @@ export async function POST(request: NextRequest) {
         company: (body.company as string) || 'Unknown Company',
         prospect_name: (body.prospect_name as string) || null,
         call_date: callDate,
-        duration_seconds: durationSeconds,
-        outcome,
+        call_timestamp: new Date().toISOString(),
+        duration_ms: durationMs,
+        duration_formatted: formatDuration(durationMs),
+        disposition,
+        disposition_label: (body.outcome as string) || null,
+        is_connected: durationMs > 0,
+        has_transcript: !!transcript,
         transcript,
         recording_url: (body.recording_url as string) || null,
       },
@@ -156,7 +162,7 @@ export async function POST(request: NextRequest) {
     sdr_name: sdr.name,
     sdr_slug: sdr.slug,
     call_date: callDate,
-    duration: formatDuration(durationSeconds),
+    duration: formatDuration(durationMs),
     has_transcript: !!transcript,
   });
 }

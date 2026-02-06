@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
           improvement: analysis.improvement,
           talk_time_percent: analysis.talk_time_percent,
           talk_speed_wpm: analysis.talk_speed_wpm,
-          longest_monologue_seconds: analysis.longest_monologue_secs,
+          longest_monologue_secs: analysis.longest_monologue_secs,
           customer_story_secs: analysis.customer_story_secs,
           patience_secs: analysis.patience_secs,
           area_breakdown: analysis.area_breakdown,

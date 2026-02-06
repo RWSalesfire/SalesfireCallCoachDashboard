@@ -113,28 +113,28 @@ export async function POST(request: NextRequest) {
     // ── Daily stats ──
     const { data: dayCalls } = await supabase
       .from('calls')
-      .select('id, duration_seconds, outcome, transcript')
+      .select('id, duration_ms, disposition, transcript')
       .eq('sdr_id', sdr.id)
       .eq('call_date', yesterday);
 
     const calls = dayCalls || [];
     const totalDials = calls.length;
-    const connectedCalls = calls.filter((c) => (c.duration_seconds || 0) > 0).length;
+    const connectedCalls = calls.filter((c) => (c.duration_ms || 0) > 0).length;
     const connectionRate = totalDials > 0 ? Math.round((connectedCalls / totalDials) * 1000) / 10 : 0;
-    const callsOver5min = calls.filter((c) => (c.duration_seconds || 0) >= 300).length;
+    const callsOver5min = calls.filter((c) => (c.duration_ms || 0) >= 300000).length;
 
     const { error: statsError } = await supabase
       .from('daily_stats')
       .upsert(
         {
           sdr_id: sdr.id,
-          stat_date: yesterday,
+          date: yesterday,
           total_dials: totalDials,
           connected_calls: connectedCalls,
           connection_rate: connectionRate,
           calls_over_5min: callsOver5min,
         },
-        { onConflict: 'sdr_id,stat_date' }
+        { onConflict: 'sdr_id,date' }
       );
 
     result.daily_stats = !statsError;
@@ -166,11 +166,12 @@ export async function POST(request: NextRequest) {
           .upsert(
             {
               sdr_id: sdr.id,
-              focus_date: yesterday,
+              date: yesterday,
               instruction: focusResult.instruction,
-              generated_from_calls: analyses.map((a: CallAnalysis) => a.call_id),
+              based_on_calls: analyses.length,
+              pattern_identified: focusResult.pattern_identified,
             },
-            { onConflict: 'sdr_id,focus_date' }
+            { onConflict: 'sdr_id,date' }
           );
 
         result.daily_focus = !focusError;
