@@ -141,6 +141,8 @@ export interface DashboardData {
   playbook: Playbook;
 }
 
+export type Timeframe = 'thisWeek' | 'last4Weeks' | 'last3Months';
+
 export interface SDRInfo {
   name: string;
   slug: string;

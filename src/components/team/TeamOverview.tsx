@@ -29,7 +29,7 @@ export default function TeamOverview({ data }: TeamOverviewProps) {
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         <section>
-          <SuperpowersGrid superpowers={data.superpowers} />
+          <SuperpowersGrid superpowersByTimeframe={data.superpowersByTimeframe} />
         </section>
         <section>
           <Leaderboard sdrs={data.sdrs} />

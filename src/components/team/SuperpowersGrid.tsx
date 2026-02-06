@@ -1,9 +1,12 @@
 'use client';
 
+import { useState } from 'react';
+import { Timeframe } from '@/types';
 import { TeamSuperpower } from '@/lib/teamData';
+import TimeframeToggle from './TimeframeToggle';
 
 interface SuperpowersGridProps {
-  superpowers: TeamSuperpower[];
+  superpowersByTimeframe: Record<Timeframe, TeamSuperpower[]>;
 }
 
 function TrendIndicator({ trend }: { trend: number }) {
@@ -29,10 +32,16 @@ function TrendIndicator({ trend }: { trend: number }) {
   );
 }
 
-export default function SuperpowersGrid({ superpowers }: SuperpowersGridProps) {
+export default function SuperpowersGrid({ superpowersByTimeframe }: SuperpowersGridProps) {
+  const [timeframe, setTimeframe] = useState<Timeframe>('thisWeek');
+  const superpowers = superpowersByTimeframe[timeframe];
+
   return (
     <div>
-      <h2 className="text-xl font-semibold text-sf-dark mb-4">Team Superpowers</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold text-sf-dark">Team Superpowers</h2>
+        <TimeframeToggle currentTimeframe={timeframe} onTimeframeChange={setTimeframe} />
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {superpowers.map((sp) => (
           <div
