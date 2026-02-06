@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { sdrList } from '@/data/sampleData';
+import MotivationCarousel from '@/components/MotivationCarousel';
 
 export default function Home() {
   const today = new Date().toISOString().split('T')[0];
@@ -54,6 +55,8 @@ export default function Home() {
         </div>
 
       </main>
+
+      <MotivationCarousel />
 
       <footer className="bg-white border-t border-sf-border mt-auto">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
