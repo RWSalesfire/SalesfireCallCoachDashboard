@@ -81,7 +81,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const supabase = getSupabaseAdmin();
+  let supabase;
+  try {
+    supabase = getSupabaseAdmin();
+  } catch (err) {
+    return NextResponse.json(
+      { error: 'Supabase not configured', details: err instanceof Error ? err.message : 'Unknown' },
+      { status: 503 }
+    );
+  }
+
   const yesterday = getYesterday();
   const yesterdayDate = new Date(yesterday + 'T00:00:00Z');
   const isSunday = yesterdayDate.getUTCDay() === 0;

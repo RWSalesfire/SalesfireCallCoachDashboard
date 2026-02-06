@@ -22,7 +22,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const supabase = getSupabaseAdmin();
+  let supabase;
+  try {
+    supabase = getSupabaseAdmin();
+  } catch (err) {
+    return NextResponse.json(
+      { error: 'Supabase not configured', details: err instanceof Error ? err.message : 'Unknown' },
+      { status: 503 }
+    );
+  }
 
   // Find calls with transcripts that haven't been analysed yet
   const { data: unanalyzed, error: fetchError } = await supabase

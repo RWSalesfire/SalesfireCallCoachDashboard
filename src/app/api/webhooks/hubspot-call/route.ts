@@ -93,7 +93,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const supabase = getSupabaseAdmin();
+  let supabase;
+  try {
+    supabase = getSupabaseAdmin();
+  } catch (err) {
+    return NextResponse.json(
+      { error: 'Supabase not configured', details: err instanceof Error ? err.message : 'Unknown' },
+      { status: 503 }
+    );
+  }
 
   // Look up SDR by hubspot_owner_id
   const { data: sdr, error: sdrError } = await supabase
