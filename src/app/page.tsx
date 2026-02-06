@@ -16,13 +16,22 @@ export default function Home() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Link
-          href="/team"
-          className="block bg-sf-dark text-white rounded-xl p-6 mb-6 hover:bg-sf-dark/90 transition-colors"
-        >
-          <h3 className="text-lg font-semibold">Team Overview</h3>
-          <p className="text-sm text-white/70 mt-1">View superpowers, leaderboard, and team averages</p>
-        </Link>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <Link
+            href="/team"
+            className="block bg-sf-dark text-white rounded-xl p-6 hover:bg-sf-dark/90 transition-colors"
+          >
+            <h3 className="text-lg font-semibold">Team Overview</h3>
+            <p className="text-sm text-white/70 mt-1">View superpowers, leaderboard, and team averages</p>
+          </Link>
+          <Link
+            href="/guide"
+            className="block bg-sf-card text-sf-dark rounded-xl p-6 hover:bg-sf-card/80 transition-colors border border-sf-border/50"
+          >
+            <h3 className="text-lg font-semibold">Good Call vs Bad Call</h3>
+            <p className="text-sm text-sf-secondary mt-1">What great calls look like across all 9 scoring areas</p>
+          </Link>
+        </div>
 
         <h2 className="text-xl font-semibold text-sf-dark mb-4">Select an SDR</h2>
 

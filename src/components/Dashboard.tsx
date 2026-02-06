@@ -43,6 +43,9 @@ export default function Dashboard({ data, initialView = 'daily' }: DashboardProp
               <Link href="/team" className="text-sm text-sf-secondary hover:text-sf-dark">
                 Team
               </Link>
+              <Link href="/guide" className="text-sm text-sf-secondary hover:text-sf-dark">
+                Guide
+              </Link>
               <ViewToggle currentView={currentView} onViewChange={setCurrentView} />
             </div>
           </div>
