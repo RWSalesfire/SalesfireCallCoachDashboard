@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { runAnalyzeCalls } from '@/lib/pipeline/analyzeCalls';
+import { runEnrichCalls } from '@/lib/pipeline/enrichCalls';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -17,16 +17,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const days = Number(request.nextUrl.searchParams.get('days')) || 2;
+
   try {
-    const result = await runAnalyzeCalls();
-
-    if (result.processed === 0) {
-      return NextResponse.json({ message: 'No unanalyzed calls found', processed: 0 });
-    }
-
+    const result = await runEnrichCalls(days);
     return NextResponse.json(result);
   } catch (err) {
-    console.error('Analyze calls error:', err);
+    console.error('Enrich calls error:', err);
     return NextResponse.json(
       { error: err instanceof Error ? err.message : 'Unknown error' },
       { status: 500 }
@@ -34,7 +31,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Vercel cron triggers GET requests
 export async function GET(request: NextRequest) {
   return POST(request);
 }
