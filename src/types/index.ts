@@ -135,17 +135,25 @@ export interface Last30DaysData {
   calls: Call[];
 }
 
+export interface LibraryData {
+  callsReviewed: number;
+  demosBooked: number;
+  avgOverall: number;
+  calls: Call[];
+}
+
 export interface DashboardData {
   sdrName: string;
   sdrSlug: string;
   date: string;
-  currentView: 'daily' | 'weekly' | 'last30days';
+  currentView: 'daily' | 'weekly' | 'last30days' | 'library';
   teamAvgConnectionRate: number;
   dailyStats: DailyStats;
   focusToday: FocusToday;
   yesterdaysCalls: Call[];
   weeklyData: WeeklyData;
   last30DaysData: Last30DaysData;
+  libraryData: LibraryData;
   playbook: Playbook;
 }
 

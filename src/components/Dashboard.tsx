@@ -7,8 +7,9 @@ import ViewToggle from '@/components/ui/ViewToggle';
 import DailyView from '@/components/daily/DailyView';
 import WeeklyView from '@/components/weekly/WeeklyView';
 import Last30DaysView from '@/components/last30days/Last30DaysView';
+import LibraryView from '@/components/library/LibraryView';
 
-type ViewType = 'daily' | 'weekly' | 'last30days';
+type ViewType = 'daily' | 'weekly' | 'last30days' | 'library';
 
 interface DashboardProps {
   data: DashboardData;
@@ -36,6 +37,8 @@ export default function Dashboard({ data, initialView = 'daily' }: DashboardProp
         return `Week ${data.weeklyData.weekNumber}, 2026`;
       case 'last30days':
         return 'Last 30 Days';
+      case 'library':
+        return 'Library';
     }
   };
 
@@ -70,8 +73,10 @@ export default function Dashboard({ data, initialView = 'daily' }: DashboardProp
           <DailyView data={data} />
         ) : currentView === 'weekly' ? (
           <WeeklyView data={data} />
-        ) : (
+        ) : currentView === 'last30days' ? (
           <Last30DaysView data={data} />
+        ) : (
+          <LibraryView data={data} />
         )}
       </main>
 

@@ -1246,6 +1246,12 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
       avgOverall,
       calls: last30DaysCalls,
     },
+    libraryData: {
+      callsReviewed: 0,
+      demosBooked: 0,
+      avgOverall: 0,
+      calls: [],
+    },
     playbook
   };
 };

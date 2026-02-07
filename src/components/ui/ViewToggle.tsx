@@ -1,6 +1,6 @@
 'use client';
 
-type ViewType = 'daily' | 'weekly' | 'last30days';
+type ViewType = 'daily' | 'weekly' | 'last30days' | 'library';
 
 interface ViewToggleProps {
   currentView: ViewType;
@@ -11,6 +11,7 @@ const tabs: { value: ViewType; label: string }[] = [
   { value: 'daily', label: 'Overview' },
   { value: 'weekly', label: 'Weekly' },
   { value: 'last30days', label: 'Last 30 Days' },
+  { value: 'library', label: 'Library' },
 ];
 
 export default function ViewToggle({ currentView, onViewChange }: ViewToggleProps) {

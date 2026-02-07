@@ -214,6 +214,25 @@ export async function getCallsForLast30Days(sdrId: string, fromDate: string): Pr
   return data as any;
 }
 
+// Get calls older than 30 days (library/archive)
+export async function getLibraryCalls(sdrId: string, beforeDate: string): Promise<(CallAnalysis & { call: { company: string; prospect_name: string; duration_formatted: string; call_date: string } })[]> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from('call_analyses')
+    .select(`
+      *,
+      call:calls!inner(company, prospect_name, duration_formatted, call_date)
+    `)
+    .eq('sdr_id', sdrId)
+    .lt('analysis_date', beforeDate)
+    .order('analysis_date', { ascending: false });
+
+  if (error || !data) return [];
+  return data as any;
+}
+
 // Main function to get dashboard data
 export async function getDashboardData(slug: string, date: string): Promise<DashboardData | null> {
   // Check if Supabase is configured
@@ -261,6 +280,9 @@ export async function getDashboardData(slug: string, date: string): Promise<Dash
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
     const last30DaysCalls = await getCallsForLast30Days(sdr.id, thirtyDaysAgoStr);
+
+    // Get library calls (older than 30 days)
+    const libraryCalls = await getLibraryCalls(sdr.id, thirtyDaysAgoStr);
 
     // Check if we have any real data
     const hasRealData = dailyStats || dailyFocus || callsData.length > 0 || weeklySummary;
@@ -333,6 +355,14 @@ export async function getDashboardData(slug: string, date: string): Promise<Dash
           ? Math.round((last30DaysCalls.reduce((sum, c) => sum + (c.overall_score || 0), 0) / last30DaysCalls.length) * 10) / 10
           : 0,
         calls: last30DaysCalls.map(convertCallAnalysis),
+      },
+      libraryData: {
+        callsReviewed: libraryCalls.length,
+        demosBooked: libraryCalls.filter(c => c.outcome === 'demo').length,
+        avgOverall: libraryCalls.length > 0
+          ? Math.round((libraryCalls.reduce((sum, c) => sum + (c.overall_score || 0), 0) / libraryCalls.length) * 10) / 10
+          : 0,
+        calls: libraryCalls.map(convertCallAnalysis),
       },
       playbook: playbook,
     };
