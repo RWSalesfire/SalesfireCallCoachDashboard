@@ -195,6 +195,25 @@ function convertCallAnalysis(analysis: CallAnalysis & { call: { company: string;
   };
 }
 
+// Get calls for the last 30 days
+export async function getCallsForLast30Days(sdrId: string, fromDate: string): Promise<(CallAnalysis & { call: { company: string; prospect_name: string; duration_formatted: string; call_date: string } })[]> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from('call_analyses')
+    .select(`
+      *,
+      call:calls!inner(company, prospect_name, duration_formatted, call_date)
+    `)
+    .eq('sdr_id', sdrId)
+    .gte('analysis_date', fromDate)
+    .order('analysis_date', { ascending: false });
+
+  if (error || !data) return [];
+  return data as any;
+}
+
 // Main function to get dashboard data
 export async function getDashboardData(slug: string, date: string): Promise<DashboardData | null> {
   // Check if Supabase is configured
@@ -236,6 +255,12 @@ export async function getDashboardData(slug: string, date: string): Promise<Dash
     const weekStart = weeklySummary?.week_start || date;
     const weekEnd = weeklySummary?.week_end || date;
     const weeklyCalls = await getCallsForWeek(sdr.id, weekStart, weekEnd);
+
+    // Get last 30 days data
+    const thirtyDaysAgo = new Date(dateObj);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
+    const last30DaysCalls = await getCallsForLast30Days(sdr.id, thirtyDaysAgoStr);
 
     // Check if we have any real data
     const hasRealData = dailyStats || dailyFocus || callsData.length > 0 || weeklySummary;
@@ -300,6 +325,14 @@ export async function getDashboardData(slug: string, date: string): Promise<Dash
             couldHaveSaid: '',
           },
         },
+      },
+      last30DaysData: {
+        callsReviewed: last30DaysCalls.length,
+        demosBooked: last30DaysCalls.filter(c => c.outcome === 'demo').length,
+        avgOverall: last30DaysCalls.length > 0
+          ? Math.round((last30DaysCalls.reduce((sum, c) => sum + (c.overall_score || 0), 0) / last30DaysCalls.length) * 10) / 10
+          : 0,
+        calls: last30DaysCalls.map(convertCallAnalysis),
       },
       playbook: playbook,
     };

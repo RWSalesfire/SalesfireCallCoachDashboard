@@ -1223,6 +1223,13 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
 
   const variant = dataVariants[slug] || dataVariants.katie;
 
+  const weeklyCalls = variant.weeklyData!.calls;
+  const last30DaysCalls = weeklyCalls;
+  const demosBooked = last30DaysCalls.filter(c => c.outcome === 'demo').length;
+  const avgOverall = last30DaysCalls.length > 0
+    ? Math.round((last30DaysCalls.reduce((sum, c) => sum + c.overall, 0) / last30DaysCalls.length) * 10) / 10
+    : 0;
+
   return {
     sdrName: sdr.name,
     sdrSlug: sdr.slug,
@@ -1233,6 +1240,12 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
     focusToday: variant.focusToday!,
     yesterdaysCalls: variant.yesterdaysCalls!,
     weeklyData: variant.weeklyData!,
+    last30DaysData: {
+      callsReviewed: last30DaysCalls.length,
+      demosBooked,
+      avgOverall,
+      calls: last30DaysCalls,
+    },
     playbook
   };
 };

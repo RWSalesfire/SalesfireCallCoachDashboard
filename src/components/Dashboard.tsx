@@ -6,14 +6,17 @@ import { DashboardData } from '@/types';
 import ViewToggle from '@/components/ui/ViewToggle';
 import DailyView from '@/components/daily/DailyView';
 import WeeklyView from '@/components/weekly/WeeklyView';
+import Last30DaysView from '@/components/last30days/Last30DaysView';
+
+type ViewType = 'daily' | 'weekly' | 'last30days';
 
 interface DashboardProps {
   data: DashboardData;
-  initialView?: 'daily' | 'weekly';
+  initialView?: ViewType;
 }
 
 export default function Dashboard({ data, initialView = 'daily' }: DashboardProps) {
-  const [currentView, setCurrentView] = useState<'daily' | 'weekly'>(initialView);
+  const [currentView, setCurrentView] = useState<ViewType>(initialView);
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -25,6 +28,17 @@ export default function Dashboard({ data, initialView = 'daily' }: DashboardProp
     });
   };
 
+  const getSubtitle = () => {
+    switch (currentView) {
+      case 'daily':
+        return formatDate(data.date);
+      case 'weekly':
+        return `Week ${data.weeklyData.weekNumber}, 2026`;
+      case 'last30days':
+        return 'Last 30 Days';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -34,9 +48,7 @@ export default function Dashboard({ data, initialView = 'daily' }: DashboardProp
             <div>
               <h1 className="text-2xl font-bold text-sf-dark">{data.sdrName}</h1>
               <p className="text-sm text-sf-secondary">
-                {currentView === 'daily'
-                  ? formatDate(data.date)
-                  : `Week ${data.weeklyData.weekNumber}, 2026`}
+                {getSubtitle()}
               </p>
             </div>
             <div className="flex items-center gap-4">
@@ -56,8 +68,10 @@ export default function Dashboard({ data, initialView = 'daily' }: DashboardProp
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {currentView === 'daily' ? (
           <DailyView data={data} />
-        ) : (
+        ) : currentView === 'weekly' ? (
           <WeeklyView data={data} />
+        ) : (
+          <Last30DaysView data={data} />
         )}
       </main>
 

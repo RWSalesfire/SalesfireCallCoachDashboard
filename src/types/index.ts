@@ -128,16 +128,24 @@ export interface WeeklyData {
   weekFocus: WeekFocus;
 }
 
+export interface Last30DaysData {
+  callsReviewed: number;
+  demosBooked: number;
+  avgOverall: number;
+  calls: Call[];
+}
+
 export interface DashboardData {
   sdrName: string;
   sdrSlug: string;
   date: string;
-  currentView: 'daily' | 'weekly';
+  currentView: 'daily' | 'weekly' | 'last30days';
   teamAvgConnectionRate: number;
   dailyStats: DailyStats;
   focusToday: FocusToday;
   yesterdaysCalls: Call[];
   weeklyData: WeeklyData;
+  last30DaysData: Last30DaysData;
   playbook: Playbook;
 }
 
