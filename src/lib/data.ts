@@ -1,5 +1,5 @@
 import { getSupabase, isSupabaseConfigured, SDR, DailyStats, DailyFocus, CallAnalysis, WeeklySummary, MonthlyBenchmark } from './supabase';
-import { DashboardData, Call as DashboardCall } from '@/types';
+import { DashboardData, Call as DashboardCall, RadarScores } from '@/types';
 import { getSampleDataForSDR, playbook } from '@/data/sampleData';
 
 // Get SDR by slug
@@ -233,6 +233,30 @@ export async function getLibraryCalls(sdrId: string, beforeDate: string): Promis
   return data as any;
 }
 
+// Compute all-time radar scores by averaging across all call analyses
+function computeRadarScoresFromAnalyses(analyses: CallAnalysis[]): RadarScores {
+  const fields = [
+    ['gatekeeper_score', 'gatekeeper'],
+    ['opener_score', 'opener'],
+    ['personalisation_score', 'personalisation'],
+    ['discovery_score', 'discovery'],
+    ['call_control_score', 'callControl'],
+    ['tone_energy_score', 'toneEnergy'],
+    ['value_prop_score', 'valueProp'],
+    ['objections_score', 'objections'],
+    ['close_score', 'close'],
+  ] as const;
+
+  const result: Record<string, number> = {};
+  for (const [dbField, radarKey] of fields) {
+    const values = analyses.map(a => a[dbField]).filter((v): v is number => v != null && v > 0);
+    result[radarKey] = values.length > 0
+      ? Math.round((values.reduce((s, v) => s + v, 0) / values.length) * 10) / 10
+      : 0;
+  }
+  return result as unknown as RadarScores;
+}
+
 // Main function to get dashboard data
 export async function getDashboardData(slug: string, date: string): Promise<DashboardData | null> {
   // Check if Supabase is configured
@@ -283,6 +307,10 @@ export async function getDashboardData(slug: string, date: string): Promise<Dash
 
     // Get library calls (older than 30 days)
     const libraryCalls = await getLibraryCalls(sdr.id, thirtyDaysAgoStr);
+
+    // Compute all-time radar scores from all calls (last 30 days + library)
+    const allCalls = [...last30DaysCalls, ...libraryCalls];
+    const allTimeRadarScores = computeRadarScoresFromAnalyses(allCalls);
 
     // Check if we have any real data
     const hasRealData = dailyStats || dailyFocus || callsData.length > 0 || weeklySummary;
@@ -364,6 +392,7 @@ export async function getDashboardData(slug: string, date: string): Promise<Dash
           : 0,
         calls: libraryCalls.map(convertCallAnalysis),
       },
+      allTimeRadarScores,
       playbook: playbook,
     };
 

@@ -2,6 +2,7 @@
 
 import { DashboardData } from '@/types';
 import StatCard from '@/components/ui/StatCard';
+import SkillsRadarChart from '@/components/weekly/SkillsRadarChart';
 import FocusBanner from './FocusBanner';
 import FocusPriorityCards from './FocusPriorityCards';
 import { calculateFocusPriorities } from '@/lib/focusCalculation';
@@ -44,6 +45,11 @@ export default function DailyView({ data }: DailyViewProps) {
             suffix="%"
           />
         </div>
+      </section>
+
+      {/* Skills Overview Radar */}
+      <section>
+        <SkillsRadarChart scores={data.allTimeRadarScores} />
       </section>
 
       {/* 3 Things to Focus On */}

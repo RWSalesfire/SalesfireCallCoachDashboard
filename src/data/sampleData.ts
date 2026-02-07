@@ -1,4 +1,4 @@
-import { DashboardData, SDRInfo, Playbook } from '@/types';
+import { DashboardData, SDRInfo, Playbook, RadarScores } from '@/types';
 
 export const sdrList: SDRInfo[] = [
   {
@@ -122,6 +122,13 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
   if (!sdr) return null;
 
   // Generate different data based on SDR
+  const allTimeRadarVariants: Record<string, RadarScores> = {
+    katie: { gatekeeper: 7.2, opener: 6.5, personalisation: 5.9, discovery: 6.7, callControl: 5.9, toneEnergy: 6.7, valueProp: 5.5, objections: 5.8, close: 6.3 },
+    sally: { gatekeeper: 7.3, opener: 6.8, personalisation: 6.1, discovery: 6.6, callControl: 6.3, toneEnergy: 6.7, valueProp: 6.3, objections: 6.1, close: 5.8 },
+    jack: { gatekeeper: 7.1, opener: 6.9, personalisation: 6.4, discovery: 7.1, callControl: 6.6, toneEnergy: 6.9, valueProp: 6.4, objections: 6.2, close: 6.4 },
+    steph: { gatekeeper: 6.5, opener: 6.3, personalisation: 5.7, discovery: 5.9, callControl: 5.5, toneEnergy: 6.1, valueProp: 6.1, objections: 5.9, close: 5.9 },
+  };
+
   const dataVariants: Record<string, Partial<DashboardData>> = {
     katie: {
       dailyStats: { totalDials: 45, connectedCalls: 8, connectionRate: 17.8 },
@@ -1252,6 +1259,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
       avgOverall: 0,
       calls: [],
     },
+    allTimeRadarScores: allTimeRadarVariants[slug] || allTimeRadarVariants.katie,
     playbook
   };
 };

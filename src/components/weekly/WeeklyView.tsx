@@ -2,7 +2,6 @@
 
 import { DashboardData } from '@/types';
 import WeeklySummaryStats from './WeeklySummaryStats';
-import SkillsRadarChart from './SkillsRadarChart';
 import WeeklyCallCard from './WeeklyCallCard';
 import ProgressSection from './ProgressSection';
 import WeekFocusCard from './WeekFocusCard';
@@ -22,9 +21,8 @@ export default function WeeklyView({ data }: WeeklyViewProps) {
         <WeeklySummaryStats data={weeklyData} />
       </section>
 
-      {/* Radar Chart and Focus */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SkillsRadarChart scores={weeklyData.radarScores} />
+      {/* Week Focus */}
+      <section>
         <WeekFocusCard focus={weeklyData.weekFocus} />
       </section>
 

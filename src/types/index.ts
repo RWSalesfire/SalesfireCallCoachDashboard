@@ -154,6 +154,7 @@ export interface DashboardData {
   weeklyData: WeeklyData;
   last30DaysData: Last30DaysData;
   libraryData: LibraryData;
+  allTimeRadarScores: RadarScores;
   playbook: Playbook;
 }
 
