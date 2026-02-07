@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
 import { Timeframe } from '@/types';
 import { TeamSuperpower } from '@/lib/teamData';
 import TimeframeToggle from './TimeframeToggle';
 
 interface SuperpowersGridProps {
   superpowersByTimeframe: Record<Timeframe, TeamSuperpower[]>;
+  timeframe: Timeframe;
+  onTimeframeChange: (tf: Timeframe) => void;
 }
 
 function TrendIndicator({ trend }: { trend: number }) {
@@ -32,21 +33,21 @@ function TrendIndicator({ trend }: { trend: number }) {
   );
 }
 
-export default function SuperpowersGrid({ superpowersByTimeframe }: SuperpowersGridProps) {
-  const [timeframe, setTimeframe] = useState<Timeframe>('thisWeek');
+export default function SuperpowersGrid({ superpowersByTimeframe, timeframe, onTimeframeChange }: SuperpowersGridProps) {
   const superpowers = superpowersByTimeframe[timeframe];
 
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-sf-dark">Team Superpowers</h2>
-        <TimeframeToggle currentTimeframe={timeframe} onTimeframeChange={setTimeframe} />
+        <TimeframeToggle currentTimeframe={timeframe} onTimeframeChange={onTimeframeChange} />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {superpowers.map((sp) => (
+      <div key={timeframe} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {superpowers.map((sp, idx) => (
           <div
             key={sp.area}
-            className="bg-white rounded-xl p-4 shadow-card border-t-4 border-sf-good"
+            className="animate-fade-slide-up bg-white rounded-xl p-4 shadow-card border-t-4 border-sf-good"
+            style={{ animationDelay: `${idx * 50}ms` }}
           >
             <p className="text-xs font-medium text-sf-secondary uppercase tracking-wide mb-2">
               {sp.areaLabel}

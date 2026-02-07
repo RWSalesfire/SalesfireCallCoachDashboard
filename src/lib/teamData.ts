@@ -21,6 +21,7 @@ export interface TeamSuperpower {
 
 export interface TeamOverviewData {
   sdrs: SDRTeamStats[];
+  sdrsByTimeframe: Record<Timeframe, SDRTeamStats[]>;
   superpowers: TeamSuperpower[];
   superpowersByTimeframe: Record<Timeframe, TeamSuperpower[]>;
   teamAverages: Record<string, number>;
@@ -91,6 +92,42 @@ const SCORE_ADJUSTMENTS: Record<Timeframe, Record<string, Record<string, number>
   },
 };
 
+// Leaderboard adjustments per timeframe — shifts avgOverall, demosBooked, callsReviewed
+const LEADERBOARD_ADJUSTMENTS: Record<Timeframe, Record<string, { score: number; demos: number; calls: number }>> = {
+  thisWeek: {},
+  last4Weeks: {
+    katie: { score: 0.3, demos: 5, calls: 12 },
+    sally: { score: -0.2, demos: 4, calls: 10 },
+    jack: { score: 0.1, demos: 6, calls: 14 },
+    steph: { score: 0.4, demos: 3, calls: 11 },
+  },
+  last3Months: {
+    katie: { score: 0.5, demos: 14, calls: 38 },
+    sally: { score: 0.1, demos: 10, calls: 30 },
+    jack: { score: -0.1, demos: 16, calls: 42 },
+    steph: { score: 0.6, demos: 8, calls: 35 },
+  },
+};
+
+function generateSdrsForTimeframe(
+  baseSdrs: SDRTeamStats[],
+  timeframe: Timeframe
+): SDRTeamStats[] {
+  const adjustments = LEADERBOARD_ADJUSTMENTS[timeframe];
+  const adjusted = baseSdrs.map((sdr) => {
+    const adj = adjustments[sdr.slug];
+    if (!adj) return { ...sdr };
+    return {
+      ...sdr,
+      avgOverall: Math.round((sdr.avgOverall + adj.score) * 10) / 10,
+      demosBooked: sdr.demosBooked + adj.demos,
+      callsReviewed: sdr.callsReviewed + adj.calls,
+    };
+  });
+  adjusted.sort((a, b) => b.avgOverall - a.avgOverall);
+  return adjusted;
+}
+
 function generateSuperpowersForTimeframe(
   sdrs: SDRTeamStats[],
   timeframe: Timeframe
@@ -158,5 +195,11 @@ export function getTeamOverviewData(date: string): TeamOverviewData {
       : 0;
   }
 
-  return { sdrs, superpowers, superpowersByTimeframe, teamAverages };
+  const sdrsByTimeframe: Record<Timeframe, SDRTeamStats[]> = {
+    thisWeek: generateSdrsForTimeframe(sdrs, 'thisWeek'),
+    last4Weeks: generateSdrsForTimeframe(sdrs, 'last4Weeks'),
+    last3Months: generateSdrsForTimeframe(sdrs, 'last3Months'),
+  };
+
+  return { sdrs, sdrsByTimeframe, superpowers, superpowersByTimeframe, teamAverages };
 }
