@@ -299,7 +299,7 @@ export const chimpToChampData: PlaybookData = {
         {
           step: 9,
           label: 'Close',
-          description: 'Specific ask: "Would Thursday at 2pm work for a 15-minute demo?" Lock in the day and time.',
+          description: 'Specific ask: "Would Thursday at 2pm work for a 25-minute demo?" Lock in the day and time.',
         },
       ],
     },
@@ -375,7 +375,7 @@ export const chimpToChampData: PlaybookData = {
               lines: [
                 {
                   speaker: 'sdr',
-                  line: 'I think a 15-minute demo would show you more than another email. How does Thursday at 2pm look?',
+                  line: 'I think a 25-minute demo would show you more than another email. How does Thursday at 2pm look?',
                 },
                 {
                   speaker: 'sdr',
@@ -486,7 +486,7 @@ export const chimpToChampData: PlaybookData = {
               lines: [
                 {
                   speaker: 'sdr',
-                  line: 'Look, the emails gave you the theory \u2014 a 15-minute demo gives you the proof. I can show you exactly what this would look like for [their store]. How does Thursday at 2pm work?',
+                  line: 'Look, the emails gave you the theory \u2014 a 25-minute demo gives you the proof. I can show you exactly what this would look like for [their store]. How does Thursday at 2pm work?',
                 },
                 {
                   speaker: 'sdr',
@@ -502,7 +502,7 @@ export const chimpToChampData: PlaybookData = {
               response:
                 'Totally fair. Was there anything that surprised you \u2014 anything you didn\u2019t know about how Mailchimp handles cookies?',
               followUp:
-                'If the \u20188 strangers\u2019 thing is happening, you\u2019re leaving revenue on the table every day. Worth 15 minutes to see the scale?',
+                'If the \u20188 strangers\u2019 thing is happening, you\u2019re leaving revenue on the table every day. Worth 25 minutes to see the scale?',
             },
             {
               trigger: 'Interesting but we\u2019re locked into Mailchimp',
@@ -528,7 +528,7 @@ export const chimpToChampData: PlaybookData = {
             {
               trigger: 'Send me more info',
               response:
-                'Happy to. You\u2019ve already read the best stuff though. What would a new email tell you that a 15-minute call wouldn\u2019t?',
+                'Happy to. You\u2019ve already read the best stuff though. What would a new email tell you that a 25-minute call wouldn\u2019t?',
               followUp:
                 'I\u2019d rather show you your own data than send you someone else\u2019s. How about a quick demo instead?',
             },

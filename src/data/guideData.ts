@@ -327,7 +327,7 @@ export const guideData: GuideData = {
       scriptsAndPhrases: [
         { script: 'Would Thursday at 2pm work for a quick demo?' },
         { script: 'How\'s your diary looking Tuesday afternoon?' },
-        { script: 'I think a 15-minute demo would show you more than another email - how\'s Friday morning?' },
+        { script: 'I think a 25-minute demo would show you more than another email - how\'s Friday morning?' },
         { script: 'Before we hang up - anything specific you want me to focus on in the demo?' },
         { script: 'Great, Thursday 2pm it is. I\'ll send a calendar invite now - is [email] the best one to use?' },
       ],
