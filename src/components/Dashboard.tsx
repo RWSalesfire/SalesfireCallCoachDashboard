@@ -8,8 +8,9 @@ import DailyView from '@/components/daily/DailyView';
 import WeeklyView from '@/components/weekly/WeeklyView';
 import Last30DaysView from '@/components/last30days/Last30DaysView';
 import LibraryView from '@/components/library/LibraryView';
+import BattleCardsView from '@/components/battlecards/BattleCardsView';
 
-type ViewType = 'daily' | 'weekly' | 'last30days' | 'library';
+type ViewType = 'daily' | 'weekly' | 'last30days' | 'library' | 'battlecards';
 
 interface DashboardProps {
   data: DashboardData;
@@ -39,6 +40,8 @@ export default function Dashboard({ data, initialView = 'daily' }: DashboardProp
         return 'Last 30 Days';
       case 'library':
         return 'Library';
+      case 'battlecards':
+        return 'Battle Cards';
     }
   };
 
@@ -58,9 +61,6 @@ export default function Dashboard({ data, initialView = 'daily' }: DashboardProp
               <Link href="/team" className="text-sm text-sf-secondary hover:text-sf-dark">
                 Team
               </Link>
-              <Link href="/guide" className="text-sm text-sf-secondary hover:text-sf-dark">
-                Guide
-              </Link>
               <ViewToggle currentView={currentView} onViewChange={setCurrentView} />
             </div>
           </div>
@@ -75,8 +75,10 @@ export default function Dashboard({ data, initialView = 'daily' }: DashboardProp
           <WeeklyView data={data} />
         ) : currentView === 'last30days' ? (
           <Last30DaysView data={data} />
-        ) : (
+        ) : currentView === 'library' ? (
           <LibraryView data={data} />
+        ) : (
+          <BattleCardsView />
         )}
       </main>
 
