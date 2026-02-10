@@ -6,9 +6,11 @@ import MetricsTable from '@/components/guide/MetricsTable';
 import ScoringAreaCard from '@/components/guide/ScoringAreaCard';
 import GoldenRules from '@/components/guide/GoldenRules';
 import ChimpToChampView from './ChimpToChampView';
+import KlaviyoAiConnectView from './KlaviyoAiConnectView';
 import { chimpToChampData } from '@/data/chimpToChampData';
+import { klaviyoAiConnectData } from '@/data/klaviyoAiConnectData';
 
-type ActiveCard = 'good-call-bad-call' | 'chimp-to-champ' | null;
+type ActiveCard = 'good-call-bad-call' | 'chimp-to-champ' | 'klaviyo-ai-connect' | null;
 
 const battleCards = [
   {
@@ -20,6 +22,11 @@ const battleCards = [
     id: 'chimp-to-champ' as const,
     title: chimpToChampData.title,
     description: chimpToChampData.description,
+  },
+  {
+    id: 'klaviyo-ai-connect' as const,
+    title: klaviyoAiConnectData.title,
+    description: klaviyoAiConnectData.description,
   },
 ];
 
@@ -42,6 +49,26 @@ export default function BattleCardsView() {
         </div>
 
         <ChimpToChampView />
+      </div>
+    );
+  }
+
+  if (activeCard === 'klaviyo-ai-connect') {
+    return (
+      <div className="space-y-8">
+        <button
+          onClick={() => setActiveCard(null)}
+          className="text-sm text-sf-dark hover:underline"
+        >
+          &larr; Back to Battle Cards
+        </button>
+
+        <div>
+          <h2 className="text-2xl font-bold text-sf-dark">{klaviyoAiConnectData.title}</h2>
+          <p className="text-sm text-sf-secondary mt-1">{klaviyoAiConnectData.description}</p>
+        </div>
+
+        <KlaviyoAiConnectView />
       </div>
     );
   }
