@@ -395,9 +395,9 @@ export const chimpToChampData: PlaybookData = {
             {
               trigger: 'We\u2019re happy with Mailchimp',
               response:
-                'Good to hear. When you compare your site traffic to people entering your email flows, do those numbers add up?',
+                'Right, so that\u2019s brilliant that you\u2019re happy with Mailchimp \u2014 what we\u2019re really talking about is taking everything you love about it and just making it smarter. Basically, you get all the same functionality but with proper behavioural data, so your emails actually know what people are looking at on your site.',
               followUp:
-                'Most brands think it\u2019s fine until they see the gap. Worth 15 minutes to check?',
+                'Does it make sense to spend 20 minutes to at least find out a little more?',
             },
             {
               trigger: 'No budget right now',
