@@ -92,28 +92,30 @@ export default function ScriptSection({ section }: Props) {
       {/* Intro */}
       <p className="text-sm text-sf-secondary leading-relaxed">{section.intro}</p>
 
-      {/* Variation toggle */}
-      <div className="flex gap-1">
-        {section.variations.map((v) => {
-          const isActive = v.id === activeVariation;
-          return (
-            <button
-              key={v.id}
-              onClick={() => {
-                setActiveVariation(v.id);
-                setExpandedObjection(null);
-              }}
-              className={`shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-sf-dark text-white'
-                  : 'text-sf-secondary hover:text-sf-dark hover:bg-sf-card'
-              }`}
-            >
-              {v.label}
-            </button>
-          );
-        })}
-      </div>
+      {/* Variation toggle (hidden when only one variation) */}
+      {section.variations.length > 1 && (
+        <div className="flex gap-1">
+          {section.variations.map((v) => {
+            const isActive = v.id === activeVariation;
+            return (
+              <button
+                key={v.id}
+                onClick={() => {
+                  setActiveVariation(v.id);
+                  setExpandedObjection(null);
+                }}
+                className={`shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-sf-dark text-white'
+                    : 'text-sf-secondary hover:text-sf-dark hover:bg-sf-card'
+                }`}
+              >
+                {v.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Variation description */}
       <p className="text-sm text-sf-secondary">{variation.description}</p>
