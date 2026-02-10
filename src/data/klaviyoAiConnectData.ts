@@ -211,59 +211,106 @@ export const klaviyoAiConnectData: PlaybookData = {
               lines: [
                 {
                   speaker: 'sdr',
-                  line: 'Hi [Name], it\u2019s [Your name] from Salesfire.',
-                },
-                {
-                  speaker: 'sdr',
-                  line: 'I\u2019ll be straight with you \u2014 I was looking at your site and noticed you\u2019re on Klaviyo. I work with Klaviyo retailers every day and I\u2019ve spotted something that could be costing you a lot of revenue. Can I take 60 seconds to explain why I\u2019m calling?',
+                  line: 'Hi [Name], it\u2019s [Your name] from Salesfire. I\u2019ll be straight with you \u2014 I was looking at your site and noticed you\u2019re on Klaviyo. I work with Klaviyo retailers every day and I\u2019ve spotted something that could be costing you a lot of revenue. Can I take 60 seconds to explain?',
                 },
                 {
                   speaker: 'prospect',
                   line: '[Agrees / asks what it\u2019s about]',
-                  note: 'If they push back, go to Objections.',
+                  note: 'If they push back, go to Objection Handling below.',
                 },
               ],
             },
             {
-              format: 'guided',
+              format: 'verbatim',
               title: 'Discovery',
-              instruction:
-                'Under 50% talk time. Ask, pause, listen. Mirror anything interesting. Use implication follow-ups to quantify pain.',
-              bullets: [
-                { text: 'Start with the score: \u201cIf you had to give your email performance a score out of 10, where would you put it?\u201d Then follow up: \u201cWhat\u2019s stopping it being higher?\u201d', questionRef: 1 },
-                { text: 'Expose the gap: \u201cWhen you look at your website traffic versus how many people enter your browse abandonment flow, do those numbers make sense to you?\u201d', questionRef: 2 },
-                { text: 'Micro-commitment: \u201cWould it be useful if I explained why that happens?\u201d', questionRef: 3 },
-                { text: 'Identification probe: \u201cDo you know roughly what percentage of your website visitors Klaviyo is actually identifying right now?\u201d', questionRef: 6 },
-                { text: 'Mirror anything interesting. Pause after questions. Let silence work.' },
-                { text: 'Use implication follow-ups: \u201cWhat does that mean for your Q2 targets?\u201d or \u201cHow long has that been going on?\u201d' },
+              instruction: 'Under 50% talk time. Pause after every question \u2014 let silence do the work.',
+              lines: [
+                {
+                  speaker: 'sdr',
+                  line: 'Quick question \u2014 if you had to give your email performance a score out of 10, where would you put it?',
+                },
+                {
+                  speaker: 'prospect',
+                  line: '[Gives a number]',
+                },
+                {
+                  speaker: 'sdr',
+                  line: 'OK, so what\u2019s stopping it being higher?',
+                  note: 'Mirror whatever they say. If they mention flows, deliverability, or list size \u2014 lean in.',
+                },
+                {
+                  speaker: 'prospect',
+                  line: '[Explains frustrations]',
+                },
+                {
+                  speaker: 'sdr',
+                  line: 'That makes sense. Here\u2019s something I\u2019d love your take on \u2014 when you compare your website traffic to how many people are actually entering your browse abandonment flow, do those numbers add up?',
+                },
+                {
+                  speaker: 'prospect',
+                  line: '[Responds \u2014 usually surprised or unsure]',
+                },
+                {
+                  speaker: 'sdr',
+                  line: 'Most people haven\u2019t looked at it that way. Would it be useful if I explained why there\u2019s a gap?',
+                },
+                {
+                  speaker: 'prospect',
+                  line: '[Yes / sure]',
+                  note: 'This is a micro-commitment. Once they say yes, you\u2019re positioned as a helpful expert, not a salesperson.',
+                },
+                {
+                  speaker: 'sdr',
+                  line: 'So Klaviyo\u2019s cookies expire after 2\u20133 days. That means someone who visits your site eight times looks like eight different strangers. Your flows are only reaching a fraction of the people who actually browse. Do you know roughly what percentage of visitors Klaviyo is identifying for you right now?',
+                },
+                {
+                  speaker: 'prospect',
+                  line: '[Usually doesn\u2019t know / guesses low]',
+                  note: 'Whatever they say, the answer is almost always much lower than they expect. Let the gap speak for itself.',
+                },
               ],
             },
             {
-              format: 'guided',
+              format: 'verbatim',
               title: 'Value Prop Bridge',
-              instruction:
-                'Summarise what you heard, then connect to the three pillars. Anchor each to something the prospect said.',
-              bullets: [
-                { text: 'Summarise: \u201cSo if I\u2019m hearing you right, the main challenge is [X] \u2014 is that fair?\u201d' },
-                { text: 'Visitor Identification pillar: cross-device tracking that doesn\u2019t rely on expiring cookies. One visitor stays one visitor, not 8 strangers.' },
-                { text: 'Revenue Recovery pillar: same flows, same setup, 200% more revenue through the door.' },
-                { text: 'Ease of Implementation pillar: 30-minute demo, free proof of concept, live in under 3 minutes.' },
-                { text: 'Anchor: \u201cBased on what you said about [X], imagine what happens when your flows actually reach everyone who browses your site.\u201d' },
+              instruction: 'Summarise what you\u2019ve heard, then connect it to AI Connect. Anchor to their words, not yours.',
+              lines: [
+                {
+                  speaker: 'sdr',
+                  line: 'So if I\u2019m hearing you right, the main challenge is [X] \u2014 is that fair?',
+                },
+                {
+                  speaker: 'prospect',
+                  line: '[Confirms / clarifies]',
+                },
+                {
+                  speaker: 'sdr',
+                  line: 'That\u2019s exactly what AI Connect fixes. It\u2019s cross-device visitor identification that doesn\u2019t rely on expiring cookies \u2014 so one visitor stays one visitor, not eight strangers. Your flows stay the same, your Klaviyo setup stays the same, but you\u2019re reaching 200% more people. And setup takes under 3 minutes.',
+                },
+                {
+                  speaker: 'sdr',
+                  line: 'Based on what you said about [X], imagine what happens when your flows actually reach everyone who browses your site.',
+                  note: 'Pause here. Let them process. If they ask a question, answer it. If they go quiet, move to Close.',
+                },
               ],
             },
             {
               format: 'verbatim',
               title: 'Close',
-              instruction: 'Specific ask. Lock in day & time. Confirm email.',
+              instruction: 'Specific ask. Lock in day and time. Confirm email.',
               lines: [
                 {
                   speaker: 'sdr',
-                  line: 'Our retailers using AI Connect are recovering on average 200% more revenue through their Klaviyo flows without any change to their existing setup. Would it be worth 20 minutes with one of our team to see what that could look like for you?',
+                  line: 'Our retailers using AI Connect are recovering on average 200% more revenue through their Klaviyo flows without changing anything. Would it be worth 20 minutes with one of our team to see what that looks like for you?',
+                },
+                {
+                  speaker: 'prospect',
+                  line: '[Agrees]',
                 },
                 {
                   speaker: 'sdr',
-                  line: 'Great, how does [day] at [time] look? I\u2019ll send a calendar invite now \u2014 is [email] the best one?',
-                  note: 'If keen, add: \u201cAnd if you like the look of it, we offer a free proof of concept \u2014 live in under 3 minutes.\u201d',
+                  line: 'Great \u2014 how does [day] at [time] look? I\u2019ll send a calendar invite now. Is [email] the best one?',
+                  note: 'If they sound keen, add: \u201cAnd if you like what you see, we offer a free proof of concept \u2014 live in under 3 minutes.\u201d',
                 },
               ],
             },
@@ -330,44 +377,93 @@ export const klaviyoAiConnectData: PlaybookData = {
               ],
             },
             {
-              format: 'guided',
+              format: 'verbatim',
               title: 'Discovery',
               instruction:
-                'The carton has done the heavy lifting \u2014 your job is to quantify the pain they\u2019ve already glimpsed.',
-              bullets: [
-                { text: 'Bridge from carton: \u201cThe milk carton was about missing visitors \u2014 when you look at your website traffic versus how many people enter your browse abandonment flow, do those numbers make sense to you?\u201d', questionRef: 2 },
-                { text: 'Score the gap: \u201cIf you had to give your email performance a score out of 10, where would you put it?\u201d Follow up: \u201cWhat\u2019s stopping it being higher?\u201d', questionRef: 1 },
-                { text: 'Reference the \u201c8 strangers\u201d problem: \u201cOne of the things we mentioned in the emails is that Klaviyo cookies expire after 2\u20133 days, so one visitor looks like 8 strangers. Have you noticed your flows aren\u2019t catching everyone?\u201d', questionRef: 4 },
-                { text: 'Abandonment probe: \u201cHave you ever wondered why your abandonment emails don\u2019t seem to be catching everyone who browses?\u201d', questionRef: 7 },
-                { text: 'Future-pace: \u201cIf you could double your current flow performance without changing anything, what would that mean for your business?\u201d', questionRef: 8 },
+                'The carton has done the heavy lifting. Your job is to quantify the pain they\u2019ve already glimpsed.',
+              lines: [
+                {
+                  speaker: 'sdr',
+                  line: 'So the milk carton was about missing visitors. Here\u2019s a question \u2014 when you look at your website traffic versus how many people are actually entering your browse abandonment flow, do those numbers make sense to you?',
+                },
+                {
+                  speaker: 'prospect',
+                  line: '[Responds \u2014 usually surprised or unsure]',
+                },
+                {
+                  speaker: 'sdr',
+                  line: 'And if you had to give your email performance a score out of 10, where would you put it?',
+                },
+                {
+                  speaker: 'prospect',
+                  line: '[Gives a number]',
+                },
+                {
+                  speaker: 'sdr',
+                  line: 'What\u2019s stopping it being higher?',
+                  note: 'Mirror whatever they say. Let them talk \u2014 the more they share, the stronger your close.',
+                },
+                {
+                  speaker: 'prospect',
+                  line: '[Explains frustrations]',
+                },
+                {
+                  speaker: 'sdr',
+                  line: 'That\u2019s exactly what the emails were getting at. Klaviyo cookies expire after 2\u20133 days, so one visitor looks like eight strangers. Your flows aren\u2019t broken \u2014 they just can\u2019t see most of the people browsing your site. Have you noticed your abandonment emails aren\u2019t catching everyone?',
+                },
+                {
+                  speaker: 'prospect',
+                  line: '[Responds]',
+                },
+                {
+                  speaker: 'sdr',
+                  line: 'Here\u2019s what I\u2019d love to know \u2014 if you could double your current flow performance without changing anything, what would that mean for your business?',
+                  note: 'Whatever number or outcome they give becomes the value you\u2019re offering. Use their words in the close.',
+                },
               ],
             },
             {
-              format: 'guided',
+              format: 'verbatim',
               title: 'Value Prop Bridge',
               instruction:
-                'Anchor to the milk carton theme \u2014 missing visitors found. Let the prospect connect the dots.',
-              bullets: [
-                { text: 'Summarise: \u201cBased on what you\u2019re telling me, and what the milk carton was getting at, the main issue is [X] \u2014 fair?\u201d' },
-                { text: 'Visitor Identification: \u201cThe \u201cmissing person\u201d on the carton \u2014 that\u2019s what AI Connect solves. Cross-device tracking that doesn\u2019t rely on expiring cookies.\u201d' },
-                { text: 'Revenue Recovery: \u201cSame flows you\u2019re already running, same Klaviyo setup, but 200% more revenue because you\u2019re reaching visitors you couldn\u2019t see before.\u201d' },
-                { text: 'Ease of Implementation: \u201c30-minute demo, free proof of concept, live in under 3 minutes. No changes to your existing setup.\u201d' },
-                { text: 'Connect: \u201cGiven what you said about [X], which of those sounds most relevant to you right now?\u201d' },
+                'Anchor back to the milk carton theme \u2014 missing visitors, found. Let the prospect connect the dots.',
+              lines: [
+                {
+                  speaker: 'sdr',
+                  line: 'Based on what you\u2019re telling me, and what the milk carton was getting at, the main issue is [X] \u2014 fair?',
+                },
+                {
+                  speaker: 'prospect',
+                  line: '[Confirms / clarifies]',
+                },
+                {
+                  speaker: 'sdr',
+                  line: 'That\u2019s exactly the problem AI Connect solves. The \u201cmissing person\u201d on the carton \u2014 that\u2019s your website visitors that Klaviyo can\u2019t identify. AI Connect gives you cross-device tracking that doesn\u2019t rely on expiring cookies. Same flows you\u2019re already running, same Klaviyo setup, but 200% more revenue because you\u2019re finally reaching the visitors you couldn\u2019t see before.',
+                },
+                {
+                  speaker: 'sdr',
+                  line: 'And setup is painless \u2014 30-minute demo, free proof of concept, live in under 3 minutes. No changes to your existing setup. Given what you said about [X], which part of that sounds most relevant to you right now?',
+                  note: 'Pause. Let them pick. Whatever they choose tells you how to frame the close.',
+                },
               ],
             },
             {
               format: 'verbatim',
               title: 'Close',
-              instruction: 'Bridge from the carton (theory) to the demo (proof). Mention free proof of concept.',
+              instruction: 'Bridge from the carton (theory) to the demo (proof). Lock in a time.',
               lines: [
                 {
                   speaker: 'sdr',
                   line: 'The milk carton gave you the problem \u2014 a 20-minute demo gives you the solution. I can show you exactly what this looks like for [their store]. How does [day] at [time] work?',
                 },
                 {
+                  speaker: 'prospect',
+                  line: '[Agrees]',
+                },
+                {
                   speaker: 'sdr',
                   line: 'Perfect, [day] at [time]. I\u2019ll send a calendar invite now. Anything specific you want me to dig into?',
-                  note: 'If keen, add: \u201cAnd if you like the look of it, we do a free proof of concept \u2014 live in under 3 minutes.\u201d',
+                  note: 'If they sound keen, add: \u201cAnd if you like what you see, we do a free proof of concept \u2014 live in under 3 minutes.\u201d',
                 },
               ],
             },
