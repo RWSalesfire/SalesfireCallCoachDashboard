@@ -388,9 +388,9 @@ export const chimpToChampData: PlaybookData = {
             {
               trigger: 'Just send me an email',
               response:
-                'Absolutely. So I send you something relevant \u2014 what\u2019s the one thing that would make you actually open it?',
+                'Of course I can. Usually when someone asks me to send an email it\u2019s just a polite way to get rid of me \u2014 when was the last time you read an email that was actually better than a conversation?',
               followUp:
-                'Would it be easier to grab 15 minutes and I\u2019ll show you rather than tell you?',
+                'Does it make sense for me to stick a placeholder in your calendar and give you a call when it\u2019s a better time?',
             },
             {
               trigger: 'We\u2019re happy with Mailchimp',
