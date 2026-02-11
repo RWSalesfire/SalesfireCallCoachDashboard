@@ -245,7 +245,7 @@ BEGIN
     END IF;
     RETURN ROUND((connected::DECIMAL / dials * 100)::DECIMAL, 1);
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SET search_path = '';
 
 -- Function to update timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -254,7 +254,7 @@ BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SET search_path = '';
 
 -- Triggers for updated_at
 CREATE TRIGGER update_sdrs_updated_at
@@ -269,17 +269,21 @@ CREATE TRIGGER update_weekly_summaries_updated_at
 
 -- ============================================
 -- Row Level Security (RLS) Policies
--- Enable when authentication is set up
 -- ============================================
 
--- ALTER TABLE sdrs ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE calls ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE call_analyses ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE weekly_summaries ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE daily_focus ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE daily_stats ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sdrs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE calls ENABLE ROW LEVEL SECURITY;
+ALTER TABLE call_analyses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE weekly_summaries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE daily_focus ENABLE ROW LEVEL SECURITY;
+ALTER TABLE daily_stats ENABLE ROW LEVEL SECURITY;
+ALTER TABLE monthly_benchmarks ENABLE ROW LEVEL SECURITY;
 
--- Example RLS policy (uncomment when needed):
--- CREATE POLICY "SDRs can view their own data" ON calls
---     FOR SELECT
---     USING (sdr_id IN (SELECT id FROM sdrs WHERE email = auth.email()));
+-- Allow public read access (anon key) — internal dashboard, no user auth
+CREATE POLICY "Allow public read" ON sdrs FOR SELECT USING (true);
+CREATE POLICY "Allow public read" ON calls FOR SELECT USING (true);
+CREATE POLICY "Allow public read" ON call_analyses FOR SELECT USING (true);
+CREATE POLICY "Allow public read" ON weekly_summaries FOR SELECT USING (true);
+CREATE POLICY "Allow public read" ON daily_focus FOR SELECT USING (true);
+CREATE POLICY "Allow public read" ON daily_stats FOR SELECT USING (true);
+CREATE POLICY "Allow public read" ON monthly_benchmarks FOR SELECT USING (true);

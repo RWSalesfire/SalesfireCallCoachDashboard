@@ -45,13 +45,6 @@ export default function Home() {
           ))}
         </div>
 
-        <Link
-          href="/guide"
-          className="block bg-sf-card text-sf-dark rounded-xl p-6 hover:bg-sf-card/80 transition-colors border border-sf-border/50 mt-6"
-        >
-          <h3 className="text-lg font-semibold">Good Call vs Bad Call</h3>
-          <p className="text-sm text-sf-secondary mt-1">What great calls look like across all 9 scoring areas</p>
-        </Link>
 
       </main>
 
