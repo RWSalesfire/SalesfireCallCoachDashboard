@@ -105,6 +105,14 @@ Respond with ONLY a valid JSON object matching this exact structure (no markdown
   }
 }`;
 
+function stripCodeFence(text: string): string {
+  const trimmed = text.trim();
+  if (trimmed.startsWith('```')) {
+    return trimmed.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '');
+  }
+  return trimmed;
+}
+
 export async function analyzeCallTranscript(call: Call): Promise<AnalysisResult> {
   const client = getClient();
 
@@ -129,7 +137,7 @@ ${call.transcript}`;
     .map((b) => b.text)
     .join('');
 
-  const parsed: AnalysisResult = JSON.parse(text);
+  const parsed: AnalysisResult = JSON.parse(stripCodeFence(text));
   return parsed;
 }
 
@@ -192,5 +200,5 @@ export async function generateDailyFocus(
     .map((b) => b.text)
     .join('');
 
-  return JSON.parse(text);
+  return JSON.parse(stripCodeFence(text));
 }

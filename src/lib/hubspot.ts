@@ -54,15 +54,18 @@ interface HubSpotBatchReadResponse {
 }
 
 // ── Disposition mapping ──
-// HubSpot stores call dispositions as GUIDs. These are the default HubSpot disposition GUIDs.
-// Custom portals may have different GUIDs — unknown ones are logged and mapped to 'other'.
+// HubSpot stores call dispositions as GUIDs. Sourced from /calling/v1/dispositions.
+// Unknown ones are logged and mapped to 'other'.
 const DISPOSITION_GUID_MAP: Record<string, { label: string; outcome: string }> = {
   'f240bbac-87c9-4f6e-bf70-924b57d47db7': { label: 'Connected', outcome: 'warm_lead' },
   '9d9162e7-6cf3-4944-bf63-4dff82258764': { label: 'Busy', outcome: 'other' },
-  '73a0d17f-1163-4015-8db0-11f8b9571a07': { label: 'No answer', outcome: 'other' },
-  'a4c4c377-d246-4b32-a13b-75a56a4cd0ff': { label: 'Left voicemail', outcome: 'other' },
-  'b2cf5968-551e-4856-9783-52b3da59a7d0': { label: 'Wrong number', outcome: 'other' },
-  '17b47fee-58de-441e-a44c-c6300d46f273': { label: 'Left live message', outcome: 'other' },
+  '73a0d17f-1163-4015-bdd5-ec830791da20': { label: 'No answer', outcome: 'other' },
+  'b2cf5968-551e-4856-9783-52b3da59a7d0': { label: 'Left voicemail', outcome: 'other' },
+  'a4c4c377-d246-4b32-a13b-75a56a4cd0ff': { label: 'Left live message', outcome: 'other' },
+  '17b47fee-58de-441e-a44c-c6300d46f273': { label: 'Wrong number', outcome: 'other' },
+  'b4164014-67b0-410e-9855-8c66d9ce7f8c': { label: 'Gatekeeper', outcome: 'other' },
+  'f60564d8-944b-41b2-b2ee-ebed75b95aef': { label: 'CS Line Only', outcome: 'other' },
+  'dad50696-4089-4f03-aa1e-e9ce4f0207b4': { label: 'Disconnected Call', outcome: 'other' },
 };
 
 function mapDisposition(guid: string | undefined): { label: string | null; outcome: string | null } {

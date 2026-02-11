@@ -2,7 +2,7 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { transcribeFromUrl } from '@/lib/deepgram';
 
 const MAX_CALLS_PER_RUN = 10;
-const MIN_DURATION_MS = 30_000; // Skip calls under 30s (voicemails, wrong numbers)
+const MIN_DURATION_MS = 300_000; // Skip calls under 5 min — only transcribe meaningful conversations
 
 export interface TranscribeResult {
   processed: number;
@@ -15,11 +15,12 @@ export interface TranscribeResult {
 export async function runTranscribeCalls(): Promise<TranscribeResult> {
   const supabase = getSupabaseAdmin();
 
-  // Find calls with a recording URL but no transcript yet
+  // Find connected calls with a recording URL but no transcript yet
   const { data: calls, error: fetchError } = await supabase
     .from('calls')
     .select('id, recording_url, duration_ms')
     .eq('has_transcript', false)
+    .ilike('disposition_label', 'Connected%')
     .not('recording_url', 'is', null)
     .neq('recording_url', '')
     .order('created_at', { ascending: true })

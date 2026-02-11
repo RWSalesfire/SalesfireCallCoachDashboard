@@ -14,8 +14,15 @@ export interface AnalyzeResult {
 export async function runAnalyzeCalls(): Promise<AnalyzeResult> {
   const supabase = getSupabaseAdmin();
 
+  // Get IDs of calls that already have analyses
+  const { data: existingAnalyses } = await supabase
+    .from('call_analyses')
+    .select('call_id');
+
+  const analyzedCallIds = (existingAnalyses || []).map((a: { call_id: string }) => a.call_id);
+
   // Find calls with transcripts that haven't been analysed yet
-  const { data: unanalyzed, error: fetchError } = await supabase
+  let query = supabase
     .from('calls')
     .select('*')
     .not('transcript', 'is', null)
@@ -23,25 +30,17 @@ export async function runAnalyzeCalls(): Promise<AnalyzeResult> {
     .order('created_at', { ascending: true })
     .limit(MAX_CALLS_PER_RUN);
 
+  if (analyzedCallIds.length > 0) {
+    query = query.not('id', 'in', `(${analyzedCallIds.join(',')})`);
+  }
+
+  const { data: callsToAnalyze, error: fetchError } = await query;
+
   if (fetchError) {
     throw new Error(`Failed to fetch calls: ${fetchError.message}`);
   }
 
-  if (!unanalyzed || unanalyzed.length === 0) {
-    return { processed: 0, succeeded: 0, failed: 0, results: [] };
-  }
-
-  // Filter out calls that already have analyses
-  const callIds = unanalyzed.map((c: Call) => c.id);
-  const { data: existingAnalyses } = await supabase
-    .from('call_analyses')
-    .select('call_id')
-    .in('call_id', callIds);
-
-  const analyzedCallIds = new Set((existingAnalyses || []).map((a: { call_id: string }) => a.call_id));
-  const callsToAnalyze = unanalyzed.filter((c: Call) => !analyzedCallIds.has(c.id));
-
-  if (callsToAnalyze.length === 0) {
+  if (!callsToAnalyze || callsToAnalyze.length === 0) {
     return { processed: 0, succeeded: 0, failed: 0, results: [] };
   }
 
@@ -50,6 +49,8 @@ export async function runAnalyzeCalls(): Promise<AnalyzeResult> {
   for (const call of callsToAnalyze) {
     try {
       const analysis = await analyzeCallTranscript(call as Call);
+
+      const roundInt = (v: number | null | undefined) => v != null ? Math.round(v) : null;
 
       const { error: insertError } = await supabase
         .from('call_analyses')
@@ -72,10 +73,10 @@ export async function runAnalyzeCalls(): Promise<AnalyzeResult> {
           key_moment: analysis.key_moment,
           improvement: analysis.improvement,
           talk_time_percent: analysis.talk_time_percent,
-          talk_speed_wpm: analysis.talk_speed_wpm,
-          longest_monologue_secs: analysis.longest_monologue_secs,
-          customer_story_secs: analysis.customer_story_secs,
-          patience_secs: analysis.patience_secs,
+          talk_speed_wpm: roundInt(analysis.talk_speed_wpm),
+          longest_monologue_secs: roundInt(analysis.longest_monologue_secs),
+          customer_story_secs: roundInt(analysis.customer_story_secs),
+          patience_secs: roundInt(analysis.patience_secs),
           area_breakdown: analysis.area_breakdown,
           raw_analysis: analysis,
         });
