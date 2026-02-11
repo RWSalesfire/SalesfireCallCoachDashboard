@@ -149,10 +149,7 @@ async function backfillWeeklySummaries() {
         .from('weekly_summaries')
         .upsert(weeklyPayload, { onConflict: 'sdr_id,week_number,year' });
 
-      if (weeklyError) {
-        console.error(`Upsert error for ${sdr.name} week ${weekNum}:`, weeklyError);
-      }
-      weekResults.push({ week: weekNum, calls: wa.length, success: !weeklyError, error: weeklyError?.message });
+      weekResults.push({ week: weekNum, calls: wa.length, success: !weeklyError });
     }
 
     results.push({ sdr: sdr.name, weeks: weekResults });

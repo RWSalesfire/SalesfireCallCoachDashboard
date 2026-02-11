@@ -200,10 +200,12 @@ export async function runAggregateDaily(): Promise<AggregateResult> {
           sdr_id: sdr.id,
           week_number: weekNum,
           year,
+          week_start: weekStart,
+          week_end: weekEnd,
           calls_reviewed: wa.length,
           demos_booked: demosBooked,
           avg_overall: avgOverall,
-          focus_area: weakestArea,
+          focus_area_name: weakestArea,
           focus_area_score: weakestScore,
         };
 
