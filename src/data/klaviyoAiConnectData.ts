@@ -208,20 +208,20 @@ export const klaviyoAiConnectData: PlaybookData = {
               format: 'verbatim',
               title: 'Opener',
               instruction:
-                'Reference the milk carton up front. If they recall it, lean in. If not, pivot to Script A opener.',
+                'Reference the pink milk carton up front. Get permission to take a couple of minutes to explain the technical issue.',
               lines: [
                 {
                   speaker: 'sdr',
-                  line: 'Hi [Name], it\u2019s [Your name] from Salesfire. We sent you something a bit different recently \u2014 a milk carton with a missing person on the front. Do you remember it?',
+                  line: 'Hi [Name], it\u2019s [Your name] from Salesfire. We sent you something a bit different recently \u2014 that pink milk carton with the missing person on it. Did you get it?',
                 },
                 {
                   speaker: 'prospect',
-                  line: '[Yes / vaguely / which one?]',
-                  note: 'If yes, lean in. If vague, briefly explain the carton concept. If no, pivot to Script A opener.',
+                  line: '[Responds]',
+                  note: 'If yes, lean in. If vague, briefly explain the carton concept.',
                 },
                 {
                   speaker: 'sdr',
-                  line: 'The reason we sent it is that the \u201cmissing person\u201d is actually your website visitors \u2014 the ones Klaviyo can\u2019t see because cookies expire after 2\u20133 days. Can I take 2 minutes to show you what I mean?',
+                  line: 'Brilliant. So the reason we sent it is we\u2019ve been speaking to loads of Klaviyo users recently, and there\u2019s this technical issue that basically every retailer has but doesn\u2019t know about. Can I take a couple of minutes to explain what I mean?',
                 },
               ],
             },
@@ -229,36 +229,40 @@ export const klaviyoAiConnectData: PlaybookData = {
               format: 'verbatim',
               title: 'Discovery',
               instruction:
-                'The carton has done the heavy lifting. Your job is to quantify the pain they\u2019ve already glimpsed.',
+                'Use a concrete example to make the gap tangible. Mirror whatever they say \u2014 let them talk, the more they share, the stronger your close.',
               lines: [
                 {
                   speaker: 'sdr',
-                  line: 'So the milk carton was about missing visitors. Here\u2019s a question \u2014 when you look at your website traffic versus how many people are actually entering your browse abandonment flow, do those numbers make sense to you?',
+                  line: 'Right, so when you look at your website analytics \u2014 let\u2019s say you had 1,000 visitors yesterday \u2014 how many of those do you reckon actually made it into your browse abandonment flow in Klaviyo?',
                 },
                 {
                   speaker: 'prospect',
-                  line: '[Responds \u2014 usually surprised or unsure]',
-                },
-                {
-                  speaker: 'sdr',
-                  line: 'And if you had to give your email performance a score out of 10, where would you put it?',
-                },
-                {
-                  speaker: 'prospect',
-                  line: '[Gives a number]',
-                },
-                {
-                  speaker: 'sdr',
-                  line: 'What\u2019s stopping it being higher?',
+                  line: '[Responds]',
                   note: 'Mirror whatever they say. Let them talk \u2014 the more they share, the stronger your close.',
                 },
                 {
+                  speaker: 'sdr',
+                  line: 'Right, so would it be useful if I explained why that happens?',
+                },
+                {
                   speaker: 'prospect',
-                  line: '[Explains frustrations]',
+                  line: '[Usually says yes]',
+                },
+              ],
+            },
+            {
+              format: 'verbatim',
+              title: 'Problem + Cross-Device + Skipped Flows',
+              instruction:
+                'Use the Currys analogy to make the cookie problem concrete. Then layer on cross-device and skipped flows to build the full picture.',
+              lines: [
+                {
+                  speaker: 'sdr',
+                  line: 'Right, so imagine you walk into Currys, and the sales assistant helps you look at TVs. You say you\u2019ll think about it and leave. Next week, you come back, but there\u2019s a different assistant on. They\u2019ve got no clue you were interested in that 55-inch Samsung, so they start from scratch.',
                 },
                 {
                   speaker: 'sdr',
-                  line: 'That\u2019s exactly what the emails were getting at. Klaviyo cookies expire after 2\u20133 days, so one visitor looks like eight strangers. Your flows aren\u2019t broken \u2014 they just can\u2019t see most of the people browsing your site. Have you noticed your abandonment emails aren\u2019t catching everyone?',
+                  line: 'That\u2019s Klaviyo in a nutshell. Someone visits your site 8 times, but cookies expire, so Klaviyo treats them like 8 different strangers every time. Mental, isn\u2019t it?',
                 },
                 {
                   speaker: 'prospect',
@@ -266,53 +270,80 @@ export const klaviyoAiConnectData: PlaybookData = {
                 },
                 {
                   speaker: 'sdr',
-                  line: 'Here\u2019s what I\u2019d love to know \u2014 if you could double your current flow performance without changing anything, what would that mean for your business?',
-                  note: 'Whatever number or outcome they give becomes the value you\u2019re offering. Use their words in the close.',
+                  line: 'And if someone browses on their phone during lunch, then switches to their laptop at home \u2014 boom. Klaviyo thinks that\u2019s two completely different people. The laptop visitor never gets your abandonment emails because Klaviyo doesn\u2019t know they\u2019re the same person who was browsing on mobile.',
+                },
+                {
+                  speaker: 'sdr',
+                  line: 'Have you noticed your abandonment emails aren\u2019t catching everyone and often being skipped?',
+                },
+                {
+                  speaker: 'prospect',
+                  line: '[Responds]',
+                },
+                {
+                  speaker: 'sdr',
+                  line: 'When you look at your flow analytics in Klaviyo, you\u2019ll see loads of emails getting skipped, yeah? But here\u2019s the thing \u2014 those anonymous visitors crossing devices, and outside of cookie windows? They don\u2019t even make it into the flow to be skipped. They\u2019re completely invisible to Klaviyo.',
                 },
               ],
             },
             {
               format: 'verbatim',
-              title: 'Value Prop Bridge',
+              title: 'Value Discovery',
               instruction:
-                'Anchor back to the milk carton theme \u2014 missing visitors, found. Let the prospect connect the dots.',
+                'Get the prospect to quantify the opportunity in their own words. Whatever number or outcome they give becomes the value you\u2019re offering in the close.',
               lines: [
                 {
                   speaker: 'sdr',
-                  line: 'Based on what you\u2019re telling me, and what the milk carton was getting at, the main issue is [X] \u2014 fair?',
+                  line: 'Quick question \u2014 if you could double your current browse and cart abandonment performance without changing a single email, what would that mean for your targets this year?',
+                },
+                {
+                  speaker: 'prospect',
+                  line: '[Responds]',
+                  note: 'Get their answer \u2014 use their words in the close.',
+                },
+              ],
+            },
+            {
+              format: 'verbatim',
+              title: 'Social Proof + Anchor',
+              instruction:
+                'Use a retailer quote to build credibility. Then mirror their earlier words back to confirm the problem before moving to the close.',
+              lines: [
+                {
+                  speaker: 'sdr',
+                  line: 'We\u2019ve been working with other [their type] retailers, and one MD said to me, \u2018[Your Name], I thought my abandonment flows were broken \u2014 turns out I was only seeing 30% of the people who should have been in there.\u2019',
+                },
+                {
+                  speaker: 'sdr',
+                  line: 'Based on what you\u2019re telling me, the main issue is [mirror their words from earlier] \u2014 fair?',
                 },
                 {
                   speaker: 'prospect',
                   line: '[Confirms / clarifies]',
-                },
-                {
-                  speaker: 'sdr',
-                  line: 'That\u2019s exactly the problem AI Connect solves. The \u201cmissing person\u201d on the carton \u2014 that\u2019s your website visitors that Klaviyo can\u2019t identify. AI Connect gives you cross-device tracking that doesn\u2019t rely on expiring cookies. Same flows you\u2019re already running, same Klaviyo setup, but 200% more revenue because you\u2019re finally reaching the visitors you couldn\u2019t see before.',
-                },
-                {
-                  speaker: 'sdr',
-                  line: 'And setup is painless \u2014 30-minute demo, free proof of concept, live in under 3 minutes. No changes to your existing setup. Given what you said about [X], which part of that sounds most relevant to you right now?',
-                  note: 'Pause. Let them pick. Whatever they choose tells you how to frame the close.',
                 },
               ],
             },
             {
               format: 'verbatim',
               title: 'Close',
-              instruction: 'Bridge from the carton (theory) to the demo (proof). Lock in a time.',
+              instruction:
+                'Pitch the BDM demo with urgency. Introduce the colleague by name, position it as personalised, and add the free POC offer.',
               lines: [
                 {
                   speaker: 'sdr',
-                  line: 'The milk carton gave you the problem \u2014 a 20-minute demo gives you the solution. I can show you exactly what this looks like for [their store]. How does [day] at [time] work?',
-                },
-                {
-                  speaker: 'prospect',
-                  line: '[Agrees]',
+                  line: 'Look, this is exactly what [BDM name] deals with every day. Our AI Connect typically recovers 200% more revenue through the same Klaviyo flows you\u2019re already running.',
                 },
                 {
                   speaker: 'sdr',
-                  line: 'Perfect, [day] at [time]. I\u2019ll send a calendar invite now. Anything specific you want me to dig into?',
-                  note: 'If they sound keen, add: \u201cAnd if you like what you see, we do a free proof of concept \u2014 live in under 3 minutes.\u201d',
+                  line: 'The thing is, the longer retailers sit on this, the more of those invisible visitors just keep slipping through the cracks. Let\u2019s get [BDM name] to walk through your numbers \u2014 how\u2019s [day] at [time]?',
+                },
+                {
+                  speaker: 'prospect',
+                  line: '[Responds]',
+                },
+                {
+                  speaker: 'sdr',
+                  line: 'My colleague [BDM name] is brilliant at this stuff \u2014 he can show you exactly what\u2019s happening with your specific setup. And if you like what you see, we do a free proof of concept \u2014 live in under 3 minutes.',
                 },
               ],
             },
