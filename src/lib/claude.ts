@@ -64,8 +64,8 @@ Also estimate these call metrics (use null if you truly cannot estimate):
 - customer_story_secs: longest uninterrupted prospect speaking block in seconds
 - patience_secs: average pause before SDR responds after prospect finishes speaking
 
-For each applicable skill area, provide an area_breakdown entry with:
-- score: the numeric score
+For EVERY skill area that received a numeric score (not null), you MUST provide an area_breakdown entry. Do NOT omit any scored area. Each entry must include:
+- score: the numeric score (must match the score above)
 - why: one-sentence justification
 - well: what the SDR did well in this area
 - improve: what could be improved
@@ -78,6 +78,8 @@ Also provide:
 - key_moment: quote or describe the most impactful moment
 - improvement: the single highest-leverage improvement for this SDR
 
+IMPORTANT: The area_breakdown object must contain an entry for EVERY skill area that has a numeric score (not null). If a score is null, do NOT include that area in area_breakdown. If a score is a number, you MUST include it.
+
 Respond with ONLY a valid JSON object matching this exact structure (no markdown, no backticks):
 {
   "outcome": "demo|email|not_interested|warm_lead|other",
@@ -86,7 +88,7 @@ Respond with ONLY a valid JSON object matching this exact structure (no markdown
   "opener_score": 8,
   "personalisation_score": 6,
   "discovery_score": 7,
-  "call_control_score": null,
+  "call_control_score": 6,
   "tone_energy_score": 7,
   "value_prop_score": 6,
   "objections_score": null,
@@ -101,7 +103,12 @@ Respond with ONLY a valid JSON object matching this exact structure (no markdown
   "patience_secs": 2,
   "area_breakdown": {
     "opener": { "score": 8, "why": "...", "well": "...", "improve": "...", "try_next": "..." },
-    ...
+    "personalisation": { "score": 6, "why": "...", "well": "...", "improve": "...", "try_next": "..." },
+    "discovery": { "score": 7, "why": "...", "well": "...", "improve": "...", "try_next": "..." },
+    "callControl": { "score": 6, "why": "...", "well": "...", "improve": "...", "try_next": "..." },
+    "toneEnergy": { "score": 7, "why": "...", "well": "...", "improve": "...", "try_next": "..." },
+    "valueProp": { "score": 6, "why": "...", "well": "...", "improve": "...", "try_next": "..." },
+    "close": { "score": 8, "why": "...", "well": "...", "improve": "...", "try_next": "..." }
   }
 }`;
 

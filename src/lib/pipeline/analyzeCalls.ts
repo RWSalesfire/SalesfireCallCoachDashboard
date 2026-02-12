@@ -4,6 +4,60 @@ import { Call } from '@/lib/supabase';
 
 const MAX_CALLS_PER_RUN = 10;
 
+// Map score fields to their area_breakdown keys
+const SCORE_TO_AREA: Record<string, string> = {
+  gatekeeper_score: 'gatekeeper',
+  opener_score: 'opener',
+  personalisation_score: 'personalisation',
+  discovery_score: 'discovery',
+  call_control_score: 'callControl',
+  tone_energy_score: 'toneEnergy',
+  value_prop_score: 'valueProp',
+  objections_score: 'objections',
+  close_score: 'close',
+};
+
+const AREA_LABELS: Record<string, string> = {
+  gatekeeper: 'Gatekeeper',
+  opener: 'Opener',
+  personalisation: 'Personalisation',
+  discovery: 'Discovery',
+  callControl: 'Call Control',
+  toneEnergy: 'Tone & Energy',
+  valueProp: 'Value Prop',
+  objections: 'Objections',
+  close: 'Close',
+};
+
+/**
+ * Ensure every non-null score has a corresponding area_breakdown entry.
+ * If Claude omitted an area, insert a minimal placeholder so the UI can render it.
+ */
+function ensureCompleteBreakdown(
+  analysis: Record<string, unknown>,
+): Record<string, { score: number; why: string; well: string; improve: string; try_next: string }> {
+  const breakdown = (analysis.area_breakdown || {}) as Record<
+    string,
+    { score: number; why: string; well: string; improve: string; try_next: string }
+  >;
+
+  for (const [scoreField, areaKey] of Object.entries(SCORE_TO_AREA)) {
+    const scoreValue = analysis[scoreField];
+    if (typeof scoreValue === 'number' && !(areaKey in breakdown)) {
+      const label = AREA_LABELS[areaKey] || areaKey;
+      breakdown[areaKey] = {
+        score: scoreValue,
+        why: `${label} was scored ${scoreValue}/10.`,
+        well: 'Analysis pending for this area.',
+        improve: 'Analysis pending for this area.',
+        try_next: `Focus on improving ${label} in your next calls.`,
+      };
+    }
+  }
+
+  return breakdown;
+}
+
 export interface AnalyzeResult {
   processed: number;
   succeeded: number;
@@ -50,6 +104,9 @@ export async function runAnalyzeCalls(): Promise<AnalyzeResult> {
     try {
       const analysis = await analyzeCallTranscript(call as Call);
 
+      // Ensure all scored areas have breakdown entries (safety net for incomplete Claude responses)
+      const completeBreakdown = ensureCompleteBreakdown(analysis as unknown as Record<string, unknown>);
+
       const roundInt = (v: number | null | undefined) => v != null ? Math.round(v) : null;
 
       const { error: insertError } = await supabase
@@ -77,7 +134,7 @@ export async function runAnalyzeCalls(): Promise<AnalyzeResult> {
           longest_monologue_secs: roundInt(analysis.longest_monologue_secs),
           customer_story_secs: roundInt(analysis.customer_story_secs),
           patience_secs: roundInt(analysis.patience_secs),
-          area_breakdown: analysis.area_breakdown,
+          area_breakdown: completeBreakdown,
           raw_analysis: analysis,
         });
 
