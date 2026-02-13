@@ -2,7 +2,7 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { transcribeFromUrl } from '@/lib/deepgram';
 
 const MAX_CALLS_PER_RUN = 10;
-const MIN_DURATION_MS = 300_000; // Skip calls under 5 min — only transcribe meaningful conversations
+const MIN_DURATION_MS = 240_000; // Skip calls under 4 min — only transcribe meaningful conversations
 
 export interface TranscribeResult {
   processed: number;
