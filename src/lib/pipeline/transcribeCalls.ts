@@ -15,12 +15,33 @@ export interface TranscribeResult {
 export async function runTranscribeCalls(): Promise<TranscribeResult> {
   const supabase = getSupabaseAdmin();
 
-  // Find connected calls with a recording URL but no transcript yet
+  // Mark short connected calls as "transcribed" so we don't keep re-checking them.
+  // Done as a separate step so it doesn't consume the MAX_CALLS_PER_RUN limit.
+  const { data: shortCalls } = await supabase
+    .from('calls')
+    .select('id')
+    .eq('has_transcript', false)
+    .ilike('disposition_label', 'Connected%')
+    .lt('duration_ms', MIN_DURATION_MS)
+    .limit(100);
+
+  let skippedShort = 0;
+  if (shortCalls && shortCalls.length > 0) {
+    const shortIds = shortCalls.map((c) => c.id);
+    await supabase
+      .from('calls')
+      .update({ has_transcript: true })
+      .in('id', shortIds);
+    skippedShort = shortIds.length;
+  }
+
+  // Find connected calls with a recording URL, long enough to transcribe
   const { data: calls, error: fetchError } = await supabase
     .from('calls')
     .select('id, recording_url, duration_ms')
     .eq('has_transcript', false)
     .ilike('disposition_label', 'Connected%')
+    .gte('duration_ms', MIN_DURATION_MS)
     .not('recording_url', 'is', null)
     .neq('recording_url', '')
     .order('created_at', { ascending: true })
@@ -31,24 +52,12 @@ export async function runTranscribeCalls(): Promise<TranscribeResult> {
   }
 
   if (!calls || calls.length === 0) {
-    return { processed: 0, succeeded: 0, failed: 0, skipped_short: 0, results: [] };
+    return { processed: 0, succeeded: 0, failed: 0, skipped_short: skippedShort, results: [] };
   }
 
   const results: TranscribeResult['results'] = [];
-  let skippedShort = 0;
 
   for (const call of calls) {
-    // Skip very short calls (voicemails, wrong numbers)
-    if (call.duration_ms && call.duration_ms < MIN_DURATION_MS) {
-      skippedShort++;
-      // Mark as "transcribed" so we don't retry — there's nothing useful to transcribe
-      await supabase
-        .from('calls')
-        .update({ has_transcript: true })
-        .eq('id', call.id);
-      continue;
-    }
-
     try {
       console.log(`[transcribe] Processing call ${call.id}...`);
       const result = await transcribeFromUrl(call.recording_url!);

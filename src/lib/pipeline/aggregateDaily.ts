@@ -95,13 +95,13 @@ export async function runAggregateDaily(): Promise<AggregateResult> {
     // ── Daily stats ──
     const { data: dayCalls } = await supabase
       .from('calls')
-      .select('id, duration_ms, disposition, transcript')
+      .select('id, duration_ms, disposition, disposition_label, transcript')
       .eq('sdr_id', sdr.id)
       .eq('call_date', yesterday);
 
     const calls = dayCalls || [];
     const totalDials = calls.length;
-    const connectedCalls = calls.filter((c) => (c.duration_ms || 0) > 0).length;
+    const connectedCalls = calls.filter((c) => (c.disposition_label || '').startsWith('Connected')).length;
     const connectionRate = totalDials > 0 ? Math.round((connectedCalls / totalDials) * 1000) / 10 : 0;
     const callsOver5min = calls.filter((c) => (c.duration_ms || 0) >= 300000).length;
 
