@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { QuestionsSection as QuestionsSectionData } from '@/data/chimpToChampData';
+import { getFollowUpTitle, getFollowUpQuestion } from '@/data/chimpToChampData';
 
 interface Props {
   section: QuestionsSectionData;
@@ -10,9 +11,19 @@ interface Props {
 export default function QuestionsSection({ section }: Props) {
   const [focusMode, setFocusMode] = useState(false);
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
+  const [expandedFollowUps, setExpandedFollowUps] = useState<Set<number>>(new Set());
 
   const toggleExpanded = (num: number) => {
     setExpandedCards((prev) => {
+      const next = new Set(prev);
+      if (next.has(num)) next.delete(num);
+      else next.add(num);
+      return next;
+    });
+  };
+
+  const toggleFollowUpExpanded = (num: number) => {
+    setExpandedFollowUps((prev) => {
       const next = new Set(prev);
       if (next.has(num)) next.delete(num);
       else next.add(num);
@@ -49,6 +60,8 @@ export default function QuestionsSection({ section }: Props) {
             focusMode={focusMode}
             expanded={expandedCards.has(q.number)}
             onToggle={() => toggleExpanded(q.number)}
+            followUpExpanded={expandedFollowUps.has(q.number)}
+            onToggleFollowUp={() => toggleFollowUpExpanded(q.number)}
           />
         ))}
       </div>
@@ -69,6 +82,8 @@ export default function QuestionsSection({ section }: Props) {
             focusMode={focusMode}
             expanded={expandedCards.has(q.number)}
             onToggle={() => toggleExpanded(q.number)}
+            followUpExpanded={expandedFollowUps.has(q.number)}
+            onToggleFollowUp={() => toggleFollowUpExpanded(q.number)}
           />
         ))}
       </div>
@@ -85,11 +100,15 @@ function QuestionCard({
   focusMode,
   expanded,
   onToggle,
+  followUpExpanded,
+  onToggleFollowUp,
 }: {
   q: Question;
   focusMode: boolean;
   expanded: boolean;
   onToggle: () => void;
+  followUpExpanded: boolean;
+  onToggleFollowUp: () => void;
 }) {
   const bgClass = q.isBonus ? 'bg-sf-card-alt' : 'bg-white';
 
@@ -122,11 +141,38 @@ function QuestionCard({
             )}
           </div>
 
-          {/* Follow-up shown inline (not hidden in focus mode — SDRs need it mid-call) */}
+          {/* Follow-up with title (not hidden in focus mode — SDRs need it mid-call) */}
           {q.followUp && !focusMode && (
-            <p className="text-sm text-sf-secondary mt-1.5 italic">
-              Follow-up: &ldquo;{q.followUp}&rdquo;
-            </p>
+            <div className="mt-2">
+              {getFollowUpTitle(q.followUp) ? (
+                <div className="space-y-1">
+                  <button
+                    onClick={onToggleFollowUp}
+                    className="flex items-center gap-2 text-sm font-medium text-sf-focus hover:text-sf-dark transition-colors"
+                  >
+                    <span className="text-xs">🔄</span>
+                    <span>{getFollowUpTitle(q.followUp)}</span>
+                    <svg
+                      className={`w-3 h-3 transition-transform ${followUpExpanded ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {followUpExpanded && (
+                    <p className="text-sm text-sf-secondary italic pl-5">
+                      &ldquo;{getFollowUpQuestion(q.followUp)}&rdquo;
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-sf-secondary italic">
+                  Follow-up: &ldquo;{getFollowUpQuestion(q.followUp)}&rdquo;
+                </p>
+              )}
+            </div>
           )}
         </div>
       </div>

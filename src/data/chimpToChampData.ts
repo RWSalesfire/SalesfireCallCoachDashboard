@@ -12,7 +12,10 @@ export interface HeroSection {
 export interface Question {
   number: number;
   question: string;
-  followUp?: string;
+  followUp?: {
+    title: string;
+    question: string;
+  } | string; // Support both new format and legacy string format
   whyItWorks?: string;
   whenToUse?: string;
   isBonus?: boolean;
@@ -118,6 +121,7 @@ export interface LiveScriptLine {
 export interface ToolboxQuestion {
   id: string;
   text: string;
+  title?: string; // Optional title for scannable follow-ups
 }
 
 export interface BranchPhaseContent {
@@ -177,6 +181,63 @@ export type PlaybookSection =
   | ListSection
   | ScriptSection
   | LiveScriptSection;
+
+// ─── Utility functions for follow-up handling ────────────────────────────────
+
+/**
+ * Gets the follow-up title, either from the new format or generates one from legacy text
+ */
+export function getFollowUpTitle(followUp: Question['followUp']): string | undefined {
+  if (!followUp) return undefined;
+  if (typeof followUp === 'string') {
+    // Auto-generate title from text for legacy format
+    return generateTitleFromText(followUp);
+  }
+  return followUp?.title;
+}
+
+/**
+ * Gets the follow-up question text
+ */
+export function getFollowUpQuestion(followUp: Question['followUp']): string | undefined {
+  if (!followUp) return undefined;
+  if (typeof followUp === 'string') {
+    return followUp;
+  }
+  return followUp?.question;
+}
+
+/**
+ * Gets the toolbox question title
+ */
+export function getToolboxQuestionTitle(question: ToolboxQuestion): string | undefined {
+  if (question.title) {
+    return question.title;
+  }
+  // Auto-generate title for questions without explicit titles
+  return generateTitleFromText(question.text);
+}
+
+/**
+ * Gets the toolbox question text
+ */
+export function getToolboxQuestionText(question: ToolboxQuestion): string {
+  return question.text;
+}
+
+/**
+ * Generates a concise title from follow-up question text
+ */
+function generateTitleFromText(text: string): string {
+  // Simple title generation logic - take first few key words
+  const words = text.toLowerCase()
+    .replace(/['"?]/g, '') // Remove quotes and question marks
+    .split(' ')
+    .filter(word => !['what', 'why', 'how', 'when', 'where', 'who', 'that', 'made', 'you', 'it', 'the', 'a', 'an', 'is', 'are', 'was', 'were'].includes(word));
+
+  const titleWords = words.slice(0, 2);
+  return titleWords.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
 
 export interface PlaybookData {
   title: string;
@@ -260,11 +321,11 @@ export const chimpToChampData: PlaybookData = {
               instruction: 'Use as needed — these are a toolbox, not a checklist. Pick what fits the conversation.',
               type: 'toolbox' as const,
               questions: [
-                { id: 'ac-q1', text: 'Have you tried setting up anything beyond the basics — like post-purchase or win-back flows? How did that go?' },
-                { id: 'ac-q2', text: 'Are there things you\'ve wanted to automate but just couldn\'t get Mailchimp to do?' },
-                { id: 'ac-q3', text: 'How much time does your team spend manually doing things that should be automated?' },
-                { id: 'ac-q4', text: 'Do you feel like your flows are actually personalised, or are they pretty much the same for everyone?' },
-                { id: 'ac-q5', text: 'If you could build any flow tomorrow with no limitations, what would it be?' },
+                { id: 'ac-q1', title: 'Advanced Flows', text: 'Have you tried setting up anything beyond the basics — like post-purchase or win-back flows? How did that go?' },
+                { id: 'ac-q2', title: 'Platform Limits', text: 'Are there things you\'ve wanted to automate but just couldn\'t get Mailchimp to do?' },
+                { id: 'ac-q3', title: 'Manual Work', text: 'How much time does your team spend manually doing things that should be automated?' },
+                { id: 'ac-q4', title: 'Personalisation Level', text: 'Do you feel like your flows are actually personalised, or are they pretty much the same for everyone?' },
+                { id: 'ac-q5', title: 'Dream Flow', text: 'If you could build any flow tomorrow with no limitations, what would it be?' },
               ],
             },
             {
@@ -312,10 +373,10 @@ export const chimpToChampData: PlaybookData = {
               instruction: 'Use as needed — these are a toolbox, not a checklist. Pick what fits the conversation.',
               type: 'toolbox' as const,
               questions: [
-                { id: 'ps-q1', text: 'Are you able to segment based on actual purchase behaviour, or is it mostly list tags and manual segments?' },
-                { id: 'ps-q2', text: 'Do your emails change based on what someone\'s been looking at on your site, or is it the same content for everyone?' },
-                { id: 'ps-q3', text: 'Have you tried dynamic content blocks — showing different products to different people in the same email?' },
-                { id: 'ps-q4', text: 'How confident are you that your emails are landing at the right time for each person?' },
+                { id: 'ps-q1', title: 'Segmentation', text: 'Are you able to segment based on actual purchase behaviour, or is it mostly list tags and manual segments?' },
+                { id: 'ps-q2', title: 'Dynamic Content', text: 'Do your emails change based on what someone\'s been looking at on your site, or is it the same content for everyone?' },
+                { id: 'ps-q3', title: 'Content Blocks', text: 'Have you tried dynamic content blocks — showing different products to different people in the same email?' },
+                { id: 'ps-q4', title: 'Send Timing', text: 'How confident are you that your emails are landing at the right time for each person?' },
                 { id: 'ps-q5', text: 'If you could wave a magic wand and have fully personalised emails tomorrow, what would that look like for you?' },
               ],
             },
@@ -413,11 +474,11 @@ export const chimpToChampData: PlaybookData = {
               instruction: 'Use as needed — these are a toolbox, not a checklist. Pick what fits the conversation.',
               type: 'toolbox' as const,
               questions: [
-                { id: 'sb-q1', text: 'When something breaks — a flow stops working, deliverability drops — how quickly can you get someone on the phone?' },
-                { id: 'sb-q2', text: 'Have you ever been stuck waiting on a chatbot when you needed a real answer?' },
-                { id: 'sb-q3', text: 'Do you feel like you\'ve got a dedicated person who actually knows your account, or is it a different person every time?' },
+                { id: 'sb-q1', title: 'Emergency Response', text: 'When something breaks — a flow stops working, deliverability drops — how quickly can you get someone on the phone?' },
+                { id: 'sb-q2', title: 'Chatbot Frustration', text: 'Have you ever been stuck waiting on a chatbot when you needed a real answer?' },
+                { id: 'sb-q3', title: 'Account Knowledge', text: 'Do you feel like you\'ve got a dedicated person who actually knows your account, or is it a different person every time?' },
                 { id: 'sb-q4', text: 'How much time have you lost trying to troubleshoot things yourself because support couldn\'t help fast enough?' },
-                { id: 'sb-q5', text: 'If you had someone who proactively flagged issues and suggested improvements — not just fixed tickets — how would that change things?' },
+                { id: 'sb-q5', title: 'Proactive Support', text: 'If you had someone who proactively flagged issues and suggested improvements — not just fixed tickets — how would that change things?' },
               ],
             },
             {
@@ -492,28 +553,40 @@ export const chimpToChampData: PlaybookData = {
         {
           number: 1,
           question: 'How are you finding Mailchimp for your email marketing right now?',
-          followUp: 'What made you set it up that way originally?',
+          followUp: {
+            title: 'Setup Origins',
+            question: 'What made you set it up that way originally?'
+          },
           whyItWorks:
             'Open-ended and non-threatening. Lets them self-diagnose — most will volunteer frustrations without you having to push.',
         },
         {
           number: 2,
           question: 'What does your current flow setup look like — welcome series, abandoned cart, that kind of thing?',
-          followUp: 'Are those performing the way you\'d like?',
+          followUp: {
+            title: 'Performance Check',
+            question: 'Are those performing the way you\'d like?'
+          },
           whyItWorks:
             'Gets specific about their automation maturity. Mailchimp users often have basic flows or none at all — this exposes the gap.',
         },
         {
           number: 3,
           question: 'When you look at your email revenue vs your site traffic, do the numbers add up?',
-          followUp: 'What do you think is causing that gap?',
+          followUp: {
+            title: 'Gap Analysis',
+            question: 'What do you think is causing that gap?'
+          },
           whyItWorks:
             'Introduces the revenue gap concept. Forces them to confront the disconnect between traffic and email capture — which is where we win.',
         },
         {
           number: 4,
           question: 'Have you ever felt limited by what Mailchimp can do — segmentation, reporting, anything like that?',
-          followUp: 'Tell me more about that...',
+          followUp: {
+            title: 'Specific Limitations',
+            question: 'Tell me more about that...'
+          },
           whyItWorks:
             'Directly surfaces platform frustration. "Have you ever felt limited" is softer than "What\'s wrong with Mailchimp" but gets the same answer.',
         },

@@ -8,7 +8,9 @@ import type {
   FrustrationBranch,
   NoneResonateBranch,
   BranchClose,
+  ToolboxQuestion,
 } from '@/data/chimpToChampData';
+import { getToolboxQuestionTitle, getToolboxQuestionText } from '@/data/chimpToChampData';
 
 interface Props {
   section: LiveScriptSectionData;
@@ -394,20 +396,69 @@ function NarrativePhase({ phase }: { phase: BranchPhaseContent }) {
 }
 
 function ToolboxPhase({ phase }: { phase: BranchPhaseContent }) {
+  const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(new Set());
+
+  const toggleQuestionExpanded = (questionId: string) => {
+    setExpandedQuestions((prev) => {
+      const next = new Set(prev);
+      if (next.has(questionId)) {
+        next.delete(questionId);
+      } else {
+        next.add(questionId);
+      }
+      return next;
+    });
+  };
+
   return (
     <div className="space-y-3">
       {phase.instruction && (
         <p className="text-xs text-sf-secondary italic">{phase.instruction}</p>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-        {phase.questions?.map((q) => (
-          <div
-            key={q.id}
-            className="bg-white rounded-xl border border-sf-border shadow-card p-4 hover:border-sf-dark transition-colors"
-          >
-            <p className="text-base text-sf-body leading-relaxed">{q.text}</p>
-          </div>
-        ))}
+        {phase.questions?.map((q) => {
+          const title = getToolboxQuestionTitle(q);
+          const text = getToolboxQuestionText(q);
+          const isExpanded = expandedQuestions.has(q.id);
+
+          return (
+            <div
+              key={q.id}
+              className="bg-white rounded-xl border border-sf-border shadow-card hover:border-sf-dark transition-colors"
+            >
+              {title ? (
+                <div className="p-4">
+                  <button
+                    onClick={() => toggleQuestionExpanded(q.id)}
+                    className="w-full flex items-center justify-between text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs">🔄</span>
+                      <span className="font-medium text-sf-focus text-sm">{title}</span>
+                    </div>
+                    <svg
+                      className={`w-3 h-3 transition-transform text-sf-secondary ${isExpanded ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {isExpanded && (
+                    <div className="mt-2 pt-2 border-t border-sf-border">
+                      <p className="text-base text-sf-body leading-relaxed">{text}</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="p-4">
+                  <p className="text-base text-sf-body leading-relaxed">{text}</p>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
