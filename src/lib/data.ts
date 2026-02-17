@@ -155,8 +155,45 @@ export async function getProgressData(sdrId: string, currentYear: number, curren
   return data;
 }
 
+// Map score fields to area breakdown keys and labels (used to fill missing breakdowns at read time)
+const SCORE_FIELD_MAP: { dbField: keyof CallAnalysis; areaKey: string; label: string }[] = [
+  { dbField: 'gatekeeper_score', areaKey: 'gatekeeper', label: 'Gatekeeper' },
+  { dbField: 'opener_score', areaKey: 'opener', label: 'Opener' },
+  { dbField: 'personalisation_score', areaKey: 'personalisation', label: 'Personalisation' },
+  { dbField: 'discovery_score', areaKey: 'discovery', label: 'Discovery' },
+  { dbField: 'call_control_score', areaKey: 'callControl', label: 'Call Control' },
+  { dbField: 'tone_energy_score', areaKey: 'toneEnergy', label: 'Tone & Energy' },
+  { dbField: 'value_prop_score', areaKey: 'valueProp', label: 'Value Prop' },
+  { dbField: 'objections_score', areaKey: 'objections', label: 'Objections' },
+  { dbField: 'close_score', areaKey: 'close', label: 'Close' },
+];
+
 // Helper to convert DB call analysis to dashboard format
 function convertCallAnalysis(analysis: CallAnalysis & { call: { company: string; prospect_name: string; duration_formatted: string; call_date?: string } }): DashboardCall {
+  // Build area breakdown, filling in any scored areas that are missing from the stored breakdown
+  const rawBreakdown = analysis.area_breakdown || {};
+  const breakdown: Record<string, { score: number; why: string; well: string; improve: string; tryNext: string }> = {};
+
+  for (const [key, val] of Object.entries(rawBreakdown)) {
+    breakdown[key] = { score: val.score, why: val.why, well: val.well, improve: val.improve, tryNext: val.try_next };
+  }
+
+  // Ensure every scored area has a breakdown entry (catches older calls missing some areas)
+  for (const { dbField, areaKey, label } of SCORE_FIELD_MAP) {
+    const scoreValue = analysis[dbField];
+    if (typeof scoreValue === 'number' && !(areaKey in breakdown)) {
+      breakdown[areaKey] = {
+        score: scoreValue,
+        why: `${label} was scored ${scoreValue}/10.`,
+        well: 'Analysis pending for this area.',
+        improve: 'Analysis pending for this area.',
+        tryNext: `Focus on improving ${label} in your next calls.`,
+      };
+    }
+  }
+
+  const hasBreakdown = Object.keys(breakdown).length > 0;
+
   return {
     id: analysis.id,
     company: analysis.call.company || 'Unknown Company',
@@ -184,12 +221,7 @@ function convertCallAnalysis(analysis: CallAnalysis & { call: { company: string;
       customerStory: analysis.customer_story_secs ?? undefined,
       patience: analysis.patience_secs ?? undefined,
     } : undefined,
-    areaBreakdown: analysis.area_breakdown ? Object.fromEntries(
-      Object.entries(analysis.area_breakdown).map(([key, val]) => [
-        key,
-        { score: val.score, why: val.why, well: val.well, improve: val.improve, tryNext: val.try_next },
-      ])
-    ) : undefined,
+    areaBreakdown: hasBreakdown ? breakdown : undefined,
     keyMoment: analysis.key_moment || undefined,
     improvement: analysis.improvement || undefined,
   };
