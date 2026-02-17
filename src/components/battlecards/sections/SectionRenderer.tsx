@@ -6,6 +6,7 @@ import QuestionsSection from './QuestionsSection';
 import TextSection from './TextSection';
 import CallFlowSection from './CallFlowSection';
 import ScriptSection from './ScriptSection';
+import LiveScriptSection from './LiveScriptSection';
 
 interface Props {
   section: PlaybookSection;
@@ -23,6 +24,8 @@ export default function SectionRenderer({ section }: Props) {
       return <CallFlowSection section={section} />;
     case 'script':
       return <ScriptSection section={section} />;
+    case 'live-script':
+      return <LiveScriptSection section={section} />;
     case 'list':
       return (
         <div className="space-y-4">

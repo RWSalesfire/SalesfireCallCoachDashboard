@@ -106,13 +106,77 @@ export interface ScriptSection {
   variations: ScriptVariation[];
 }
 
+// ─── Live Script types ────────────────────────────────────────────────────────
+
+export interface LiveScriptLine {
+  speaker: 'sdr' | 'prospect';
+  text: string;
+  note?: string;
+  emphasis?: boolean;
+}
+
+export interface ToolboxQuestion {
+  id: string;
+  text: string;
+}
+
+export interface BranchPhaseContent {
+  id: string;
+  title: string;
+  instruction?: string;
+  type: 'dialogue' | 'toolbox' | 'narrative';
+  lines?: LiveScriptLine[];
+  questions?: ToolboxQuestion[];
+}
+
+export interface BranchClose {
+  lines: LiveScriptLine[];
+}
+
+export interface FrustrationBranch {
+  id: string;
+  label: string;
+  subtitle: string;
+  icon: string;
+  openerScript: string;
+  phases: BranchPhaseContent[];
+  loopBack: string;
+  close: BranchClose;
+}
+
+export interface NoneResonateBranch {
+  id: 'none-resonate';
+  label: string;
+  subtitle: string;
+  ratingPrompt: string;
+  followUpHigh: string;
+  followUpLow: string;
+  phases: BranchPhaseContent[];
+  close: BranchClose;
+}
+
+export interface LiveScriptOpener {
+  lines: LiveScriptLine[];
+  transitionPrompt: string;
+}
+
+export interface LiveScriptSection {
+  type: 'live-script';
+  id: string;
+  tabLabel: string;
+  opener: LiveScriptOpener;
+  frustrations: FrustrationBranch[];
+  noneResonate: NoneResonateBranch;
+}
+
 export type PlaybookSection =
   | HeroSection
   | QuestionsSection
   | TextSection
   | CallFlowSection
   | ListSection
-  | ScriptSection;
+  | ScriptSection
+  | LiveScriptSection;
 
 export interface PlaybookData {
   title: string;
@@ -127,7 +191,7 @@ export const chimpToChampData: PlaybookData = {
   title: 'Chimp to Champ',
   description: 'Mailchimp conversion playbook — value prop, discovery questions & call flow',
 
-  tabOrder: ['value-prop', 'questions', 'framework', 'call-flow', 'scripts'],
+  tabOrder: ['value-prop', 'live-script'],
 
   sections: [
     // ── Value Prop tab ────────────────────────────────────────────────────
@@ -156,6 +220,266 @@ export const chimpToChampData: PlaybookData = {
         },
       ],
     },
+
+    // ── Live Script tab ────────────────────────────────────────────────────
+    {
+      type: 'live-script' as const,
+      id: 'live-script',
+      tabLabel: 'Live Script',
+      opener: {
+        lines: [
+          { speaker: 'sdr' as const, text: 'Hi [Name], it\'s [Your name] from Salesfire. Hope you\'re having a good day.' },
+          { speaker: 'sdr' as const, text: 'I\'ve been having some really interesting conversations with retailers who are on Mailchimp, and basically the same frustrations keep coming up. Can I just check — you\'re still using Mailchimp, aren\'t you?' },
+          { speaker: 'prospect' as const, text: '[Yes]' },
+          { speaker: 'sdr' as const, text: 'Brilliant. Look, you don\'t have a couple of minutes, do you? Honestly, it\'s like they\'re all reading from the same script.' },
+          { speaker: 'prospect' as const, text: '[Yes]' },
+          { speaker: 'sdr' as const, text: 'So basically, four things keep coming up, and I\'m just curious if any of these sound familiar to you:' },
+        ],
+        transitionPrompt: 'Do any of those sound familiar?',
+      },
+      frustrations: [
+        // ── Automation Ceiling ───────────────────────────────────────────
+        {
+          id: 'automation-ceiling',
+          label: 'Automation Ceiling',
+          subtitle: 'Wanting to do more but hitting limits',
+          icon: '⚙️',
+          openerScript: 'First thing — quite a few are saying they\'re hitting a bit of a ceiling with automation. You know, there\'s stuff they want to build but they just can\'t seem to get it to work the way they want.',
+          phases: [
+            {
+              id: 'ac-discovery',
+              title: 'Discovery',
+              type: 'dialogue' as const,
+              lines: [
+                { speaker: 'sdr' as const, text: 'Right, so the automation side of things. What\'s it looking like at the moment — what flows have you got running?' },
+              ],
+            },
+            {
+              id: 'ac-followups',
+              title: 'Follow-ups',
+              instruction: 'Use as needed — these are a toolbox, not a checklist. Pick what fits the conversation.',
+              type: 'toolbox' as const,
+              questions: [
+                { id: 'ac-q1', text: 'Have you tried setting up anything beyond the basics — like post-purchase or win-back flows? How did that go?' },
+                { id: 'ac-q2', text: 'Are there things you\'ve wanted to automate but just couldn\'t get Mailchimp to do?' },
+                { id: 'ac-q3', text: 'How much time does your team spend manually doing things that should be automated?' },
+                { id: 'ac-q4', text: 'Do you feel like your flows are actually personalised, or are they pretty much the same for everyone?' },
+                { id: 'ac-q5', text: 'If you could build any flow tomorrow with no limitations, what would it be?' },
+              ],
+            },
+            {
+              id: 'ac-normalize',
+              title: 'Normalise & Quantify',
+              type: 'dialogue' as const,
+              lines: [
+                { speaker: 'sdr' as const, text: 'Yeah, we hear that a lot. Mailchimp is great for getting started, but once you want to do anything more sophisticated — conditional splits, proper behavioural triggers, that kind of thing — you hit a wall pretty quickly.' },
+                { speaker: 'sdr' as const, text: 'The brands we work with, when they move to a platform that actually lets them build those flows, typically see a significant jump in email revenue — because the right message is going to the right person at the right time, instead of the same blast going to everyone.' },
+                { speaker: 'sdr' as const, text: 'What do you think that ceiling is costing you right now? Even roughly.' },
+              ],
+            },
+          ],
+          loopBack: 'Now, the other frustrations I mentioned — the browse abandonment, the support, the personalisation — are any of those resonating as well?',
+          close: {
+            lines: [
+              { speaker: 'sdr' as const, text: 'Here\'s what I\'d suggest. Let me get you booked in with [BDM name] — they specialise in helping brands break through that automation ceiling.' },
+              { speaker: 'sdr' as const, text: 'They\'ll show you exactly what\'s possible — the flows, the conditional logic, the behavioural triggers — and how it\'d work for your store specifically.' },
+              { speaker: 'sdr' as const, text: 'And if you like the look of it, we do a free proof of concept — live on your site in under 3 minutes. No commitment.' },
+              { speaker: 'sdr' as const, text: 'How does [day] at [time] look for a 25-minute call?' },
+              { speaker: 'prospect' as const, text: '[Agrees / suggests alternative]' },
+              { speaker: 'sdr' as const, text: 'Perfect. I\'ll get that sent over now. Is [email] the best one?' },
+            ],
+          },
+        },
+        // ── Personalisation ──────────────────────────────────────────────
+        {
+          id: 'personalisation',
+          label: 'Personalisation',
+          subtitle: 'Right message, right person, right time',
+          icon: '🎯',
+          openerScript: 'Second — they\'re struggling to actually personalise the content in their emails so they resonate more with customers. It all feels a bit generic.',
+          phases: [
+            {
+              id: 'ps-discovery',
+              title: 'Discovery',
+              type: 'dialogue' as const,
+              lines: [
+                { speaker: 'sdr' as const, text: 'Right, so the personalisation side of things. What\'s it looking like at the moment — how targeted are your emails right now?' },
+              ],
+            },
+            {
+              id: 'ps-followups',
+              title: 'Follow-ups',
+              instruction: 'Use as needed — these are a toolbox, not a checklist. Pick what fits the conversation.',
+              type: 'toolbox' as const,
+              questions: [
+                { id: 'ps-q1', text: 'Are you able to segment based on actual purchase behaviour, or is it mostly list tags and manual segments?' },
+                { id: 'ps-q2', text: 'Do your emails change based on what someone\'s been looking at on your site, or is it the same content for everyone?' },
+                { id: 'ps-q3', text: 'Have you tried dynamic content blocks — showing different products to different people in the same email?' },
+                { id: 'ps-q4', text: 'How confident are you that your emails are landing at the right time for each person?' },
+                { id: 'ps-q5', text: 'If you could wave a magic wand and have fully personalised emails tomorrow, what would that look like for you?' },
+              ],
+            },
+            {
+              id: 'ps-normalize',
+              title: 'Normalise & Quantify',
+              type: 'dialogue' as const,
+              lines: [
+                { speaker: 'sdr' as const, text: 'Yeah, that\'s really common with Mailchimp. The segmentation is pretty surface-level — you can tag people, but you can\'t build segments based on what they actually do on your site.' },
+                { speaker: 'sdr' as const, text: 'The brands we work with move to a platform where segments are built on real purchase data, browsing behaviour, and predictive analytics. So every email feels relevant — not just another blast.' },
+                { speaker: 'sdr' as const, text: 'What do you think sending more targeted, personalised emails would do for your open rates and revenue?' },
+              ],
+            },
+          ],
+          loopBack: 'Now, the other frustrations I mentioned — the browse abandonment, the automation ceiling, the support — are any of those resonating as well?',
+          close: {
+            lines: [
+              { speaker: 'sdr' as const, text: 'Here\'s what I\'d suggest. Let me get you booked in with [BDM name] — they specialise in showing brands what real personalisation looks like.' },
+              { speaker: 'sdr' as const, text: 'They\'ll show you the dynamic content, the predictive send times, the behavioural segments — and how it\'d work for your store.' },
+              { speaker: 'sdr' as const, text: 'And if you like the look of it, we do a free proof of concept — live on your site in under 3 minutes. No commitment.' },
+              { speaker: 'sdr' as const, text: 'How does [day] at [time] look for a 25-minute call?' },
+              { speaker: 'prospect' as const, text: '[Agrees / suggests alternative]' },
+              { speaker: 'sdr' as const, text: 'Perfect. I\'ll get that sent over now. Is [email] the best one?' },
+            ],
+          },
+        },
+        // ── Browse/Cart Abandonment ──────────────────────────────────────
+        {
+          id: 'browse-cart',
+          label: 'Browse/Cart Abandonment',
+          subtitle: 'Cookie expiry & revenue leakage',
+          icon: '🛒',
+          openerScript: 'Third one — and this is interesting — they\'re noticing their browse and cart abandonment emails aren\'t sending to as many people as they think they should. Like there\'s people slipping through the cracks.',
+          phases: [
+            {
+              id: 'bc-discovery',
+              title: 'Discovery / Normalisation',
+              instruction: 'Walk them through the cookie problem step by step. This is a narrative — keep it conversational.',
+              type: 'narrative' as const,
+              lines: [
+                { speaker: 'sdr' as const, text: 'Right, so the browse and cart abandonment side of things. Let me explain something that\'s probably happening right now and you might not even know about it.' },
+                { speaker: 'sdr' as const, text: 'So when someone visits your site, Mailchimp drops a cookie to track them — that\'s how it knows to trigger a browse abandonment or cart abandonment flow. Makes sense, right?' },
+                { speaker: 'prospect' as const, text: '[Yeah / Sure]' },
+                { speaker: 'sdr' as const, text: 'The problem is, that cookie expires really quickly. And once it expires, the next time that same person comes back to your site, Mailchimp sees them as a brand new visitor. It has no idea they were there before.' },
+                { speaker: 'sdr' as const, text: 'So your browse abandonment flow, your cart abandonment flow — they just don\'t fire. That person browses, maybe adds something to their cart, leaves… and nothing happens. No email. No follow-up. They\'re gone.' },
+                { speaker: 'prospect' as const, text: '[Reacts — surprise, frustration, or asks how big the problem is]' },
+                { speaker: 'sdr' as const, text: 'And it\'s not a small number of people either. I\'ll get to the numbers in a sec, but first — have you noticed anything like that? Like your abandonment flows not firing as much as you\'d expect?', note: 'Pause here. Let them talk.' },
+              ],
+            },
+            {
+              id: 'bc-quantify',
+              title: 'Quantifying the Cost',
+              instruction: 'Make it real with numbers. Use their own revenue if you have it, or the 40-50% stat.',
+              type: 'narrative' as const,
+              lines: [
+                { speaker: 'sdr' as const, text: 'So the brands we work with — when they move off Mailchimp and onto a platform that actually tracks properly — they typically see a 40 to 50% uplift in revenue from those abandonment flows alone.' },
+                { speaker: 'sdr' as const, text: 'Just to put that in perspective — if your cart abandonment flow is generating, say, £5,000 a month right now, that means you could be leaving another £2,000 to £2,500 on the table every single month. Just from the cookie problem.' },
+                { speaker: 'prospect' as const, text: '[Reacts]' },
+                { speaker: 'sdr' as const, text: 'And that\'s before we even talk about browse abandonment — which most Mailchimp setups either don\'t have running properly or aren\'t triggering for the same reason.' },
+                { speaker: 'sdr' as const, text: 'What does your cart abandonment flow bring in at the moment? Even a rough idea.', note: 'Get their number. Use it to calculate the uplift live.' },
+              ],
+            },
+          ],
+          loopBack: 'Now, the other frustrations I mentioned — the automation ceiling, the support, the personalisation — are any of those resonating as well?',
+          close: {
+            lines: [
+              { speaker: 'sdr' as const, text: 'Look, here\'s what I\'d suggest. I\'ll get you booked in with [BDM name] — they\'re one of our e-commerce specialists.' },
+              { speaker: 'sdr' as const, text: 'They\'ll walk you through exactly how the tracking works differently, show you the abandonment flows in action, and give you a real number on what you\'re leaving on the table.' },
+              { speaker: 'sdr' as const, text: 'And if you like the look of it, we do a free proof of concept — live on your site in under 3 minutes. No commitment, no contract, just data.' },
+              { speaker: 'sdr' as const, text: 'How does [day] at [time] look for a 25-minute call?' },
+              { speaker: 'prospect' as const, text: '[Agrees / suggests alternative]' },
+              { speaker: 'sdr' as const, text: 'Perfect. I\'ll get that sent over now. Is [email] the best one to send the invite to?' },
+            ],
+          },
+        },
+        // ── Support Black Hole ───────────────────────────────────────────
+        {
+          id: 'support-blackhole',
+          label: 'Support Black Hole',
+          subtitle: 'Can\'t get real help when you need it',
+          icon: '🕳️',
+          openerScript: 'And the fourth thing is just a distinct lack of actual support when things go wrong.',
+          phases: [
+            {
+              id: 'sb-discovery',
+              title: 'Discovery',
+              type: 'dialogue' as const,
+              lines: [
+                { speaker: 'sdr' as const, text: 'Right, so the support side of things. What\'s your experience been like when you actually need help from Mailchimp?' },
+              ],
+            },
+            {
+              id: 'sb-followups',
+              title: 'Follow-ups',
+              instruction: 'Use as needed — these are a toolbox, not a checklist. Pick what fits the conversation.',
+              type: 'toolbox' as const,
+              questions: [
+                { id: 'sb-q1', text: 'When something breaks — a flow stops working, deliverability drops — how quickly can you get someone on the phone?' },
+                { id: 'sb-q2', text: 'Have you ever been stuck waiting on a chatbot when you needed a real answer?' },
+                { id: 'sb-q3', text: 'Do you feel like you\'ve got a dedicated person who actually knows your account, or is it a different person every time?' },
+                { id: 'sb-q4', text: 'How much time have you lost trying to troubleshoot things yourself because support couldn\'t help fast enough?' },
+                { id: 'sb-q5', text: 'If you had someone who proactively flagged issues and suggested improvements — not just fixed tickets — how would that change things?' },
+              ],
+            },
+            {
+              id: 'sb-normalize',
+              title: 'Normalise & Quantify',
+              type: 'dialogue' as const,
+              lines: [
+                { speaker: 'sdr' as const, text: 'Yeah, that\'s one of the biggest things we hear. Mailchimp\'s support model just doesn\'t scale — once you\'re past a certain size, you need someone who actually picks up the phone and knows your account.' },
+                { speaker: 'sdr' as const, text: 'The brands we work with get a dedicated onboarding team, a managed migration — we handle the whole thing — and ongoing support from real people. No chatbot runaround.' },
+                { speaker: 'sdr' as const, text: 'How much time would you say your team spends on things that better support would just handle for you?' },
+              ],
+            },
+          ],
+          loopBack: 'Now, the other frustrations I mentioned — the browse abandonment, the automation ceiling, the personalisation — are any of those resonating as well?',
+          close: {
+            lines: [
+              { speaker: 'sdr' as const, text: 'Here\'s what I\'d suggest. Let me get you booked in with [BDM name] — they\'ll walk you through exactly what the support model looks like.' },
+              { speaker: 'sdr' as const, text: 'Dedicated team, managed migration, the whole thing. They\'ll show you how it works and answer any questions about the transition.' },
+              { speaker: 'sdr' as const, text: 'And if you like the look of it, we do a free proof of concept — live on your site in under 3 minutes. No commitment.' },
+              { speaker: 'sdr' as const, text: 'How does [day] at [time] look for a 25-minute call?' },
+              { speaker: 'prospect' as const, text: '[Agrees / suggests alternative]' },
+              { speaker: 'sdr' as const, text: 'Perfect. I\'ll get that sent over now. Is [email] the best one?' },
+            ],
+          },
+        },
+      ],
+      noneResonate: {
+        id: 'none-resonate',
+        label: 'None Resonate',
+        subtitle: 'Prospect doesn\'t identify with any frustration',
+        ratingPrompt: 'Can you rate Mailchimp out of 10 for me?',
+        followUpHigh: 'Interesting — so what would make it a 10?',
+        followUpLow: 'Right — so what would make it higher?',
+        phases: [
+          {
+            id: 'nr-discovery',
+            title: 'Discovery',
+            instruction: '⚠️ PLACEHOLDER — Use rating to uncover hidden pain points.',
+            type: 'dialogue' as const,
+            lines: [
+              { speaker: 'sdr' as const, text: 'That\'s fair enough. Let me ask you this — if you had to rate Mailchimp out of 10, where would you put it?' },
+              { speaker: 'prospect' as const, text: '[Gives a number]' },
+              { speaker: 'sdr' as const, text: '[If 8+] Interesting — so what would make it a 10?', note: '⚠️ Placeholder — adapt based on rating' },
+              { speaker: 'sdr' as const, text: '[If <8] Right — so what would make it higher?', note: '⚠️ Placeholder — adapt based on rating' },
+              { speaker: 'prospect' as const, text: '[Shares gaps / wishes]' },
+              { speaker: 'sdr' as const, text: 'That\'s interesting. Tell me more about that — what does that actually look like day to day?', note: '⚠️ Placeholder — dig deeper into whatever they surface' },
+            ],
+          },
+        ],
+        close: {
+          lines: [
+            { speaker: 'sdr' as const, text: '⚠️ PLACEHOLDER — Based on what you\'ve shared, I think it\'d be worth having a quick chat with [BDM name].' },
+            { speaker: 'sdr' as const, text: 'They can show you what\'s possible and give you a real comparison. 25 minutes, no commitment.' },
+            { speaker: 'sdr' as const, text: 'How does [day] at [time] look?' },
+            { speaker: 'prospect' as const, text: '[Agrees / suggests alternative]' },
+            { speaker: 'sdr' as const, text: 'Perfect. I\'ll get that sent over now. Is [email] the best one?' },
+          ],
+        },
+      },
+    },
+
+    /* ── Old tabs (kept for Klaviyo AI Connect — not routed in Chimp to Champ) ── */
 
     // ── Questions tab ─────────────────────────────────────────────────────
     {
