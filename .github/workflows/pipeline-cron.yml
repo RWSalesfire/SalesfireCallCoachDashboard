@@ -1,0 +1,28 @@
+name: Trigger Daily Pipeline
+
+on:
+  schedule:
+    # Run 6x daily: 5am, 8am, 11am, 2pm, 5pm, 8pm UTC (Mon-Fri)
+    - cron: '0 5,8,11,14,17,20 * * 1-5'
+  workflow_dispatch: # Allow manual triggers
+
+jobs:
+  trigger-pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Trigger daily pipeline
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "${{ secrets.PIPELINE_URL }}/api/cron/daily-pipeline?secret=${{ secrets.CRON_SECRET }}")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          echo "HTTP Status: $HTTP_CODE"
+          echo "$BODY" | python3 -m json.tool 2>/dev/null || echo "$BODY"
+
+          if [ "$HTTP_CODE" -ge 400 ]; then
+            echo "::error::Pipeline returned HTTP $HTTP_CODE"
+            exit 1
+          fi
