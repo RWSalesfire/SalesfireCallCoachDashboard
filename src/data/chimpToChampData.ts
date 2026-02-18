@@ -289,12 +289,12 @@ export const chimpToChampData: PlaybookData = {
       tabLabel: 'Live Script',
       opener: {
         lines: [
-          { speaker: 'sdr' as const, text: 'Hi [Name], it\'s [Your name] from Salesfire. Hope you\'re having a good day.' },
+          { speaker: 'sdr' as const, text: 'Hi [Name], it\'s [Your name] from Salesfire.' },
           { speaker: 'sdr' as const, text: 'I\'ve been having some really interesting conversations with retailers who are on Mailchimp, and basically the same frustrations keep coming up. Can I just check — you\'re still using Mailchimp, aren\'t you?' },
           { speaker: 'prospect' as const, text: '[Yes]' },
-          { speaker: 'sdr' as const, text: 'Brilliant. Look, you don\'t have a couple of minutes, do you? Honestly, it\'s like they\'re all reading from the same script.' },
+          { speaker: 'sdr' as const, text: 'Brilliant. Look, you don\'t have a couple of minutes, do you? Keen to see if any of these are at all relevant to you.' },
           { speaker: 'prospect' as const, text: '[Yes]' },
-          { speaker: 'sdr' as const, text: 'So basically, four things keep coming up, and I\'m just curious if any of these sound familiar to you:' },
+          { speaker: 'sdr' as const, text: 'So basically, four things keep coming up:' },
         ],
         transitionPrompt: 'Do any of those sound familiar?',
       },

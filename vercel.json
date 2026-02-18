@@ -5,6 +5,6 @@
   "installCommand": "npm install",
   "outputDirectory": ".next",
   "crons": [
-    { "path": "/api/cron/daily-pipeline", "schedule": "0 5,8,11,14,17,20 * * *" }
+    { "path": "/api/cron/daily-pipeline", "schedule": "0 8 * * *" }
   ]
 }
