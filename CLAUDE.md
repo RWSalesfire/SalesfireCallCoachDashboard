@@ -34,6 +34,29 @@ SDR Call Coaching Dashboard — a Next.js 14 app that displays daily and weekly 
 
 **Supabase schema** (in `supabase/schema.sql`): `sdrs`, `calls`, `call_analyses`, `daily_stats`, `daily_focus`, `weekly_summaries`, `monthly_benchmarks`
 
+## Data Pipeline
+
+- 4-step daily pipeline: enrich (HubSpot) → transcribe (Deepgram) → analyze (Claude) → aggregate
+- Pipeline endpoint: `/api/cron/daily-pipeline` — authenticates via `Authorization: Bearer <CRON_SECRET>` or `?secret=<CRON_SECRET>`
+- Individual steps also exposed: `/api/cron/enrich-calls`, `/api/cron/transcribe-calls`, `/api/cron/analyze-calls`, `/api/cron/aggregate-daily`
+- Backfill endpoint: `/api/cron/backfill-weekly` (regenerates last 6 weeks of weekly summaries)
+- Pipeline processes yesterday's calls (aggregate date = previous day), not today's
+- `maxDuration = 300` (5 min) on all cron routes
+
+## Deployment & Cron
+
+- Hosted on Vercel Hobby plan — **cron jobs in vercel.json do NOT run** on Hobby
+- GitHub Actions (`.github/workflows/pipeline-cron.yml`) triggers the pipeline 6x daily Mon-Fri (5am, 8am, 11am, 2pm, 5pm, 8pm UTC)
+- Requires GitHub repo secrets: `PIPELINE_URL` (Vercel production URL) and `CRON_SECRET`
+- Production URL: `salesfire-call-coach-dashboard.vercel.app`
+- Vercel project/org IDs in `.vercel/project.json`
+- Trigger manually: `gh workflow run "Trigger Daily Pipeline" --repo RWSalesfire/SalesfireCallCoachDashboard`
+
+## Gotchas
+
+- If dashboard shows old/sample data, check pipeline is running — `data.ts` silently falls back to `sampleData.ts` when no DB data exists for a date
+- Sample data has hardcoded dates (late Jan / early Feb 2026) — always looks stale
+
 ## Key Conventions
 
 - Path alias: `@/*` maps to `src/*`
