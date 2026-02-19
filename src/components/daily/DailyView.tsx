@@ -1,10 +1,10 @@
 'use client';
 
 import { DashboardData } from '@/types';
-import StatCard from '@/components/ui/StatCard';
-import SkillsRadarChart from '@/components/weekly/SkillsRadarChart';
 import FocusBanner from './FocusBanner';
 import FocusPriorityCards from './FocusPriorityCards';
+import WinOfTheWeek from './WinOfTheWeek';
+import SkillsBarChart from './SkillsBarChart';
 import { calculateFocusPriorities } from '@/lib/focusCalculation';
 
 interface DailyViewProps {
@@ -12,44 +12,19 @@ interface DailyViewProps {
 }
 
 export default function DailyView({ data }: DailyViewProps) {
-  const { dailyStats, focusToday, teamAvgConnectionRate } = data;
-
-  const isAboveAverage = dailyStats.connectionRate > teamAvgConnectionRate;
+  const { focusToday } = data;
   const focusPriorities = calculateFocusPriorities(data.weeklyData.calls);
 
   return (
     <div className="space-y-8">
-      {/* Stats Row */}
+      {/* Win of the Week */}
       <section>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            value={dailyStats.totalDials}
-            label="Total Dials"
-          />
-          <StatCard
-            value={dailyStats.connectedCalls}
-            label="Connected"
-          />
-          <StatCard
-            value={dailyStats.connectionRate}
-            label="Connection Rate"
-            suffix="%"
-            comparison={{
-              value: dailyStats.connectionRate,
-              isHigher: isAboveAverage,
-            }}
-          />
-          <StatCard
-            value={teamAvgConnectionRate}
-            label="Team Avg"
-            suffix="%"
-          />
-        </div>
+        <WinOfTheWeek calls={data.weeklyData.calls} />
       </section>
 
-      {/* Skills Overview Radar */}
+      {/* Skills This Week */}
       <section>
-        <SkillsRadarChart scores={data.allTimeRadarScores} />
+        <SkillsBarChart scores={data.weeklyData.radarScores} />
       </section>
 
       {/* 3 Things to Focus On */}
