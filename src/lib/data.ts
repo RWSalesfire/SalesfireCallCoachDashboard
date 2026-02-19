@@ -2,6 +2,29 @@ import { getSupabase, isSupabaseConfigured, SDR, DailyStats, DailyFocus, CallAna
 import { DashboardData, Call as DashboardCall, RadarScores } from '@/types';
 import { getSampleDataForSDR, playbook } from '@/data/sampleData';
 
+// ISO 8601 week number (matches aggregation pipeline)
+function getISOWeekNumber(date: Date): number {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+}
+
+// Get Mon-Fri bounds for the week containing the given date
+function getWeekBounds(date: Date): { start: string; end: string } {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const day = d.getUTCDay() || 7;
+  const monday = new Date(d);
+  monday.setUTCDate(d.getUTCDate() - day + 1);
+  const friday = new Date(monday);
+  friday.setUTCDate(monday.getUTCDate() + 4);
+  return {
+    start: monday.toISOString().split('T')[0],
+    end: friday.toISOString().split('T')[0],
+  };
+}
+
 // Get SDR by slug
 export async function getSDRBySlug(slug: string): Promise<SDR | null> {
   const supabase = getSupabase();
@@ -318,17 +341,17 @@ export async function getDashboardData(slug: string, date: string): Promise<Dash
       getCallsForDate(sdr.id, date),
     ]);
 
-    // Calculate week number
-    const startOfYear = new Date(year, 0, 1);
-    const weekNumber = Math.ceil(((dateObj.getTime() - startOfYear.getTime()) / 86400000 + startOfYear.getDay() + 1) / 7);
+    // Calculate ISO week number (matches aggregation pipeline)
+    const weekNumber = getISOWeekNumber(dateObj);
 
     // Get weekly data
     const weeklySummary = await getWeeklySummary(sdr.id, year, weekNumber);
     const progressData = await getProgressData(sdr.id, year, weekNumber);
 
-    // Get week boundaries for calls
-    const weekStart = weeklySummary?.week_start || date;
-    const weekEnd = weeklySummary?.week_end || date;
+    // Get week boundaries for calls - compute from date so we always get Mon-Fri
+    const { start: computedWeekStart, end: computedWeekEnd } = getWeekBounds(dateObj);
+    const weekStart = weeklySummary?.week_start || computedWeekStart;
+    const weekEnd = weeklySummary?.week_end || computedWeekEnd;
     const weeklyCalls = await getCallsForWeek(sdr.id, weekStart, weekEnd);
 
     // Get last 30 days data

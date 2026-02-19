@@ -30,12 +30,16 @@ export const dynamicParams = true;
 // Revalidate every 5 minutes for fresh data
 export const revalidate = 300;
 
-// Helper to get a date from a week number
+// Helper to get the Monday of an ISO week
 function getDateFromWeek(year: number, week: number): string {
-  const firstDayOfYear = new Date(year, 0, 1);
-  const daysOffset = (week - 1) * 7;
-  const targetDate = new Date(firstDayOfYear.getTime() + daysOffset * 24 * 60 * 60 * 1000);
-  return targetDate.toISOString().split('T')[0];
+  // ISO 8601: Week 1 contains January 4th
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const dayOfWeek = jan4.getUTCDay() || 7;
+  const mondayOfWeek1 = new Date(jan4);
+  mondayOfWeek1.setUTCDate(jan4.getUTCDate() - dayOfWeek + 1);
+  const targetMonday = new Date(mondayOfWeek1);
+  targetMonday.setUTCDate(mondayOfWeek1.getUTCDate() + (week - 1) * 7);
+  return targetMonday.toISOString().split('T')[0];
 }
 
 export default async function WeeklyPage({ params }: PageProps) {
