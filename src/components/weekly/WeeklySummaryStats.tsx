@@ -30,11 +30,10 @@ export default function WeeklySummaryStats({ data }: WeeklySummaryStatsProps) {
 
       <div className="bg-white rounded-xl p-6 shadow-card">
         <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-semibold text-sf-dark">{data.demosBooked}</span>
-          <ChangeIndicator change={data.demoChange} />
+          <span className="text-3xl font-semibold text-sf-dark">{data.topScore.toFixed(1)}</span>
         </div>
-        <p className="text-sm text-sf-secondary mt-1">Demos Booked</p>
-        <p className="text-xs text-sf-secondary">from last week</p>
+        <p className="text-sm text-sf-secondary mt-1">Top Score</p>
+        <p className="text-xs text-sf-secondary">best call this week</p>
       </div>
 
       <div className="bg-white rounded-xl p-6 shadow-card">

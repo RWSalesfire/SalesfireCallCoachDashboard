@@ -1,5 +1,5 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { generateDailyFocus } from '@/lib/claude';
+import { generateDailyFocus, generateWeeklyFocus } from '@/lib/claude';
 import { CallAnalysis, SDR } from '@/lib/supabase';
 
 function getYesterday(): string {
@@ -218,6 +218,39 @@ export async function runAggregateDaily(): Promise<AggregateResult> {
           .upsert(weeklyPayload, { onConflict: 'sdr_id,week_number,year' });
 
         result.weekly = !weeklyError;
+
+        // Generate weekly focus coaching advice
+        if (wa.length >= 2) {
+          try {
+            const weekCompanies = await Promise.all(
+              wa.map(async (a: CallAnalysis) => {
+                const { data: call } = await supabase
+                  .from('calls')
+                  .select('company')
+                  .eq('id', a.call_id)
+                  .single();
+                return call?.company || 'Unknown';
+              })
+            );
+
+            const weeklyFocusResult = await generateWeeklyFocus(sdr.name, wa, weekCompanies);
+
+            await supabase
+              .from('weekly_summaries')
+              .update({
+                week_focus_title: weeklyFocusResult.title,
+                week_focus_triggers: weeklyFocusResult.triggers,
+                week_focus_dont: weeklyFocusResult.dont,
+                week_focus_do: weeklyFocusResult.do,
+                week_focus_example: weeklyFocusResult.example,
+              })
+              .eq('sdr_id', sdr.id)
+              .eq('week_number', weekNum)
+              .eq('year', year);
+          } catch (err) {
+            console.error(`Error generating weekly focus for ${sdr.name}:`, err);
+          }
+        }
       }
     }
 

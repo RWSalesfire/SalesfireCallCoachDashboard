@@ -5,7 +5,7 @@ export interface SDRTeamStats {
   name: string;
   slug: string;
   avgOverall: number;
-  demosBooked: number;
+  topScore: number;
   callsReviewed: number;
   radarScores: RadarScores;
 }
@@ -92,20 +92,20 @@ const SCORE_ADJUSTMENTS: Record<Timeframe, Record<string, Record<string, number>
   },
 };
 
-// Leaderboard adjustments per timeframe — shifts avgOverall, demosBooked, callsReviewed
-const LEADERBOARD_ADJUSTMENTS: Record<Timeframe, Record<string, { score: number; demos: number; calls: number }>> = {
+// Leaderboard adjustments per timeframe — shifts avgOverall, callsReviewed
+const LEADERBOARD_ADJUSTMENTS: Record<Timeframe, Record<string, { score: number; calls: number }>> = {
   thisWeek: {},
   last4Weeks: {
-    katie: { score: 0.3, demos: 5, calls: 12 },
-    sally: { score: -0.2, demos: 4, calls: 10 },
-    jack: { score: 0.1, demos: 6, calls: 14 },
-    steph: { score: 0.4, demos: 3, calls: 11 },
+    katie: { score: 0.3, calls: 12 },
+    sally: { score: -0.2, calls: 10 },
+    jack: { score: 0.1, calls: 14 },
+    steph: { score: 0.4, calls: 11 },
   },
   last3Months: {
-    katie: { score: 0.5, demos: 14, calls: 38 },
-    sally: { score: 0.1, demos: 10, calls: 30 },
-    jack: { score: -0.1, demos: 16, calls: 42 },
-    steph: { score: 0.6, demos: 8, calls: 35 },
+    katie: { score: 0.5, calls: 38 },
+    sally: { score: 0.1, calls: 30 },
+    jack: { score: -0.1, calls: 42 },
+    steph: { score: 0.6, calls: 35 },
   },
 };
 
@@ -120,7 +120,6 @@ function generateSdrsForTimeframe(
     return {
       ...sdr,
       avgOverall: Math.round((sdr.avgOverall + adj.score) * 10) / 10,
-      demosBooked: sdr.demosBooked + adj.demos,
       callsReviewed: sdr.callsReviewed + adj.calls,
     };
   });
@@ -167,7 +166,7 @@ export function getTeamOverviewData(date: string): TeamOverviewData {
       name: sdr.name,
       slug: sdr.slug,
       avgOverall: data.weeklyData.avgOverall,
-      demosBooked: data.weeklyData.demosBooked,
+      topScore: data.weeklyData.topScore,
       callsReviewed: data.weeklyData.callsReviewed,
       radarScores: data.weeklyData.radarScores,
     });

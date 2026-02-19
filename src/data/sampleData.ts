@@ -190,8 +190,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
       weeklyData: {
         weekNumber: 5,
         callsReviewed: 5,
-        demosBooked: 3,
-        demoChange: 2,
+        topScore: 8.1,
         avgOverall: 6.5,
         overallChange: 0.6,
         avgFocusArea: 5.2,
@@ -453,8 +452,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
       weeklyData: {
         weekNumber: 5,
         callsReviewed: 4,
-        demosBooked: 2,
-        demoChange: 1,
+        topScore: 7.5,
         avgOverall: 6.8,
         overallChange: 0.4,
         avgFocusArea: 6.2,
@@ -720,8 +718,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
       weeklyData: {
         weekNumber: 5,
         callsReviewed: 6,
-        demosBooked: 3,
-        demoChange: 1,
+        topScore: 8.5,
         avgOverall: 6.9,
         overallChange: 0.8,
         avgFocusArea: 7.2,
@@ -1003,8 +1000,7 @@ export const getSampleDataForSDR = (slug: string, date: string): DashboardData |
       weeklyData: {
         weekNumber: 5,
         callsReviewed: 5,
-        demosBooked: 2,
-        demoChange: 0,
+        topScore: 7.2,
         avgOverall: 6.3,
         overallChange: 0.5,
         avgFocusArea: 5.8,

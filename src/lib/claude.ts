@@ -209,3 +209,80 @@ export async function generateDailyFocus(
 
   return JSON.parse(stripCodeFence(text));
 }
+
+// ──────────────────────────────────────────────
+// Generate weekly focus coaching advice
+// ──────────────────────────────────────────────
+
+const WEEKLY_FOCUS_PROMPT = `You are a sales coach at Salesfire. Analyse this week's cold calls for an SDR and identify the single most important coaching focus for next week.
+
+Return a JSON object with:
+- title: A short coaching focus title (max 8 words, e.g. "Handle early objections with curiosity")
+- triggers: 2-3 specific situations/phrases from the calls where this issue appeared
+- dont: What the SDR should STOP doing (one concise sentence)
+- do: What the SDR should START doing instead (one concise sentence)
+- example.context: A brief scenario based on a real call this week
+- example.couldHaveSaid: What the SDR could have said in that scenario (a natural sentence, not a script)
+
+Focus on the pattern that appeared most often or caused the most lost opportunities. Be specific to what you see in the calls — avoid generic advice.
+
+Respond with ONLY a valid JSON object (no markdown, no backticks):
+{
+  "title": "...",
+  "triggers": ["...", "..."],
+  "dont": "...",
+  "do": "...",
+  "example": { "context": "...", "couldHaveSaid": "..." }
+}`;
+
+interface WeeklyFocusResult {
+  title: string;
+  triggers: string[];
+  dont: string;
+  do: string;
+  example: { context: string; couldHaveSaid: string };
+}
+
+export async function generateWeeklyFocus(
+  sdrName: string,
+  analyses: Pick<CallAnalysis, 'overall_score' | 'insight' | 'improvement' | 'area_breakdown'>[],
+  companies: string[]
+): Promise<WeeklyFocusResult> {
+  const client = getClient();
+
+  const callSummaries = analyses.map((a, i) => {
+    const weakAreas = a.area_breakdown
+      ? Object.entries(a.area_breakdown)
+          .filter(([, v]) => v.score <= 5)
+          .map(([k, v]) => `${k}: ${v.score}/10 — ${v.improve || ''}`)
+          .join('; ')
+      : 'N/A';
+
+    const strongAreas = a.area_breakdown
+      ? Object.entries(a.area_breakdown)
+          .filter(([, v]) => v.score >= 7)
+          .map(([k, v]) => `${k}: ${v.score}/10`)
+          .join(', ')
+      : 'N/A';
+
+    return `Call ${i + 1} (${companies[i] || 'Unknown'}): ${a.overall_score}/10 — ${a.insight || 'No insight'}. Weak: ${weakAreas || 'none'}. Strong: ${strongAreas || 'none'}. Key improvement: ${a.improvement || 'N/A'}`;
+  }).join('\n');
+
+  const response = await client.messages.create({
+    model: MODEL,
+    max_tokens: 1024,
+    messages: [
+      {
+        role: 'user',
+        content: `${WEEKLY_FOCUS_PROMPT}\n\nSDR: ${sdrName}\nThis week's calls (${analyses.length} total):\n${callSummaries}`,
+      },
+    ],
+  });
+
+  const text = response.content
+    .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+    .map((b) => b.text)
+    .join('');
+
+  return JSON.parse(stripCodeFence(text));
+}

@@ -1,6 +1,7 @@
 import { getSupabase, isSupabaseConfigured, SDR, DailyStats, DailyFocus, CallAnalysis, WeeklySummary, MonthlyBenchmark } from './supabase';
-import { DashboardData, Call as DashboardCall, RadarScores } from '@/types';
+import { DashboardData, Call as DashboardCall, RadarScores, WeekFocus } from '@/types';
 import { getSampleDataForSDR, playbook } from '@/data/sampleData';
+import { generateWeeklyFocus } from './claude';
 
 // ISO 8601 week number (matches aggregation pipeline)
 function getISOWeekNumber(date: Date): number {
@@ -376,6 +377,123 @@ export async function getDashboardData(slug: string, date: string): Promise<Dash
       return getSampleDataForSDR(slug, date);
     }
 
+    // ── Compute weekly stats (on-the-fly when no summary, or from summary) ──
+    const weeklyCallAnalyses = weeklyCalls as CallAnalysis[];
+    const hasWeeklySummaryStats = weeklySummary?.avg_overall != null && weeklySummary.avg_overall > 0;
+
+    // Radar scores: from summary if available, otherwise compute from call analyses
+    let weeklyRadarScores: RadarScores;
+    if (hasWeeklySummaryStats) {
+      weeklyRadarScores = {
+        gatekeeper: weeklySummary!.avg_gatekeeper || 0,
+        opener: weeklySummary!.avg_opener || 0,
+        personalisation: weeklySummary!.avg_personalisation || 0,
+        discovery: weeklySummary!.avg_discovery || 0,
+        callControl: weeklySummary!.avg_call_control || 0,
+        toneEnergy: weeklySummary!.avg_tone_energy || 0,
+        valueProp: weeklySummary!.avg_value_prop || 0,
+        objections: weeklySummary!.avg_objections || 0,
+        close: weeklySummary!.avg_close || 0,
+      };
+    } else {
+      weeklyRadarScores = computeRadarScoresFromAnalyses(weeklyCallAnalyses);
+    }
+
+    // Avg overall: from summary or computed
+    const avgOverall = hasWeeklySummaryStats
+      ? weeklySummary!.avg_overall!
+      : weeklyCallAnalyses.length > 0
+        ? Math.round((weeklyCallAnalyses.reduce((sum, a) => sum + (a.overall_score || 0), 0) / weeklyCallAnalyses.length) * 10) / 10
+        : 0;
+
+    // Focus area (weakest): from summary or computed from call analyses' area_breakdown
+    let focusAreaName = weeklySummary?.focus_area_name || '';
+    let avgFocusArea = weeklySummary?.focus_area_score || 0;
+
+    if (!hasWeeklySummaryStats && weeklyCallAnalyses.length > 0) {
+      // Find weakest area from radar scores (only areas with data)
+      const areaEntries = Object.entries(weeklyRadarScores).filter(([, v]) => v > 0);
+      if (areaEntries.length > 0) {
+        const weakest = areaEntries.reduce((min, curr) => curr[1] < min[1] ? curr : min);
+        focusAreaName = weakest[0];
+        avgFocusArea = weakest[1];
+      }
+    }
+
+    // Focus area label mapping
+    const AREA_LABELS: Record<string, string> = {
+      gatekeeper: 'Gatekeeper', opener: 'Opener', personalisation: 'Personalisation',
+      discovery: 'Discovery', callControl: 'Call Control', toneEnergy: 'Tone & Energy',
+      valueProp: 'Value Prop', objections: 'Objections', close: 'Close',
+    };
+    const focusAreaLabel = AREA_LABELS[focusAreaName] || focusAreaName || 'Value Prop';
+
+    // Top score: highest individual call score this week
+    const topScore = weeklyCallAnalyses.length > 0
+      ? Math.max(...weeklyCallAnalyses.map(a => a.overall_score || 0))
+      : 0;
+
+    // Change indicators: compare to previous week
+    const previousWeekSummary = progressData.find(w => w.week_number === weekNumber - 1);
+    const overallChange = previousWeekSummary?.avg_overall
+      ? Math.round((avgOverall - previousWeekSummary.avg_overall) * 10) / 10
+      : (weeklySummary?.overall_change || 0);
+    const focusAreaChange = previousWeekSummary?.focus_area_score
+      ? Math.round((avgFocusArea - previousWeekSummary.focus_area_score) * 10) / 10
+      : (weeklySummary?.focus_area_change || 0);
+
+    // ── Weekly focus: from summary, generate on-the-fly, or placeholder ──
+    let weekFocus: WeekFocus;
+    if (weeklySummary?.week_focus_title) {
+      weekFocus = {
+        title: weeklySummary.week_focus_title,
+        triggers: weeklySummary.week_focus_triggers || [],
+        dont: weeklySummary.week_focus_dont || '',
+        do: weeklySummary.week_focus_do || '',
+        example: weeklySummary.week_focus_example || { context: '', couldHaveSaid: '' },
+      };
+    } else if (weeklyCallAnalyses.length >= 2) {
+      // Generate on-the-fly and cache
+      try {
+        const companies = weeklyCallAnalyses.map(a => {
+          const c = (a as any).call;
+          return c?.company || 'Unknown';
+        });
+        const focusResult = await generateWeeklyFocus(sdr.name, weeklyCallAnalyses, companies);
+        weekFocus = {
+          title: focusResult.title,
+          triggers: focusResult.triggers,
+          dont: focusResult.dont,
+          do: focusResult.do,
+          example: focusResult.example,
+        };
+
+        // Cache to DB so we don't regenerate on every page load
+        const supabase = getSupabase();
+        if (supabase) {
+          await supabase
+            .from('weekly_summaries')
+            .upsert({
+              sdr_id: sdr.id,
+              week_number: weekNumber,
+              year: year,
+              week_start: weekStart,
+              week_end: weekEnd,
+              week_focus_title: focusResult.title,
+              week_focus_triggers: focusResult.triggers,
+              week_focus_dont: focusResult.dont,
+              week_focus_do: focusResult.do,
+              week_focus_example: focusResult.example,
+            }, { onConflict: 'sdr_id,week_number,year' });
+        }
+      } catch (err) {
+        console.error(`Error generating weekly focus for ${sdr.name}:`, err);
+        weekFocus = { title: 'Focus area to be determined', triggers: [], dont: '', do: '', example: { context: '', couldHaveSaid: '' } };
+      }
+    } else {
+      weekFocus = { title: 'Focus area to be determined', triggers: [], dont: '', do: '', example: { context: '', couldHaveSaid: '' } };
+    }
+
     // Build dashboard data from real data
     const dashboardData: DashboardData = {
       sdrName: sdr.name,
@@ -395,41 +513,21 @@ export async function getDashboardData(slug: string, date: string): Promise<Dash
       weeklyData: {
         weekNumber: weekNumber,
         callsReviewed: weeklySummary?.calls_reviewed || weeklyCalls.length,
-        demosBooked: weeklySummary?.demos_booked || 0,
-        demoChange: weeklySummary?.demos_change || 0,
-        avgOverall: weeklySummary?.avg_overall || 0,
-        overallChange: weeklySummary?.overall_change || 0,
-        avgFocusArea: weeklySummary?.focus_area_score || 0,
-        focusAreaChange: weeklySummary?.focus_area_change || 0,
-        focusAreaName: weeklySummary?.focus_area_name || 'Value Prop',
+        topScore: topScore,
+        avgOverall: avgOverall,
+        overallChange: overallChange,
+        avgFocusArea: avgFocusArea,
+        focusAreaChange: focusAreaChange,
+        focusAreaName: focusAreaLabel,
         calls: weeklyCalls.map(convertCallAnalysis),
-        radarScores: {
-          gatekeeper: weeklySummary?.avg_gatekeeper || 0,
-          opener: weeklySummary?.avg_opener || 0,
-          personalisation: weeklySummary?.avg_personalisation || 0,
-          discovery: weeklySummary?.avg_discovery || 0,
-          callControl: weeklySummary?.avg_call_control || 0,
-          toneEnergy: weeklySummary?.avg_tone_energy || 0,
-          valueProp: weeklySummary?.avg_value_prop || 0,
-          objections: weeklySummary?.avg_objections || 0,
-          close: weeklySummary?.avg_close || 0,
-        },
+        radarScores: weeklyRadarScores,
         progressData: progressData.map((w) => ({
           week: w.week_number,
           overall: w.avg_overall || 0,
           focusArea: w.focus_area_score || 0,
           close: w.avg_close || 0,
         })),
-        weekFocus: {
-          title: weeklySummary?.week_focus_title || 'Focus area to be determined',
-          triggers: weeklySummary?.week_focus_triggers || [],
-          dont: weeklySummary?.week_focus_dont || '',
-          do: weeklySummary?.week_focus_do || '',
-          example: weeklySummary?.week_focus_example || {
-            context: '',
-            couldHaveSaid: '',
-          },
-        },
+        weekFocus: weekFocus,
       },
       last30DaysData: {
         callsReviewed: last30DaysCalls.length,

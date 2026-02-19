@@ -115,8 +115,7 @@ export interface Playbook {
 export interface WeeklyData {
   weekNumber: number;
   callsReviewed: number;
-  demosBooked: number;
-  demoChange: number;
+  topScore: number;
   avgOverall: number;
   overallChange: number;
   avgFocusArea: number;
