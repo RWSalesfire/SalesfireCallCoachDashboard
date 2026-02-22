@@ -11,6 +11,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import EmptyState from '@/components/ui/EmptyState';
 
 interface ProgressSectionProps {
   data: WeeklyData;
@@ -29,6 +30,20 @@ function ChangeCell({ change, suffix = '' }: { change: number; suffix?: string }
 
 export default function ProgressSection({ data }: ProgressSectionProps) {
   const { progressData, focusAreaName } = data;
+
+  const hasEnoughData = progressData.length >= 2;
+  if (!hasEnoughData) {
+    return (
+      <div>
+        <h2 className="section-title mb-5">Progress</h2>
+        <EmptyState
+          icon="📈"
+          title="Not enough data yet"
+          description="We need at least two weeks of reviewed calls to show your progress trend. Keep going!"
+        />
+      </div>
+    );
+  }
 
   // Format data for chart
   const chartData = progressData.map((d: ProgressDataPoint) => ({
@@ -67,7 +82,7 @@ export default function ProgressSection({ data }: ProgressSectionProps) {
     <div className="space-y-6">
       {/* Line Chart */}
       <div className="bg-white rounded-xl p-6 shadow-card">
-        <h3 className="text-lg font-semibold text-sf-dark mb-4">4-Week Progress</h3>
+        <h3 className="card-title mb-4">4-Week Progress</h3>
         <div className="h-[280px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
@@ -126,7 +141,7 @@ export default function ProgressSection({ data }: ProgressSectionProps) {
 
       {/* Comparison Table */}
       <div className="bg-white rounded-xl p-6 shadow-card">
-        <h3 className="text-lg font-semibold text-sf-dark mb-4">Week-over-Week</h3>
+        <h3 className="card-title mb-4">Week-over-Week</h3>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>

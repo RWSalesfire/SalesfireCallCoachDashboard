@@ -3,6 +3,7 @@
 import { DashboardData } from '@/types';
 import StatCard from '@/components/ui/StatCard';
 import WeeklyCallCard from '@/components/weekly/WeeklyCallCard';
+import EmptyState from '@/components/ui/EmptyState';
 
 interface LibraryViewProps {
   data: DashboardData;
@@ -22,7 +23,7 @@ export default function LibraryView({ data }: LibraryViewProps) {
 
       {/* Call List */}
       <div>
-        <h2 className="text-lg font-semibold text-sf-dark mb-4">Archived Calls</h2>
+        <h2 className="section-title mb-5">Archived Calls</h2>
         {libraryData.calls.length > 0 ? (
           <div className="space-y-3">
             {libraryData.calls.map((call) => (
@@ -30,9 +31,11 @@ export default function LibraryView({ data }: LibraryViewProps) {
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-xl p-8 shadow-card text-center">
-            <p className="text-sf-secondary">No archived calls older than 30 days.</p>
-          </div>
+          <EmptyState
+            icon="📚"
+            title="No archived calls yet"
+            description="Calls older than 30 days are kept here for reference. Your library will grow as you build history."
+          />
         )}
       </div>
     </div>

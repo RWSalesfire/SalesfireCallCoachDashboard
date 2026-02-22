@@ -52,12 +52,15 @@ export default function Dashboard({ data, initialView = 'daily' }: DashboardProp
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-sf-dark">{data.sdrName}</h1>
-              <p className="text-sm text-sf-secondary">
+              <h1 className="page-title">{data.sdrName}</h1>
+              <p className="body-muted mt-1">
                 {getSubtitle()}
               </p>
             </div>
             <div className="flex items-center gap-4">
+              <Link href="/" className="text-sm text-sf-secondary hover:text-sf-dark">
+                ← Home
+              </Link>
               <Link href="/team" className="text-sm text-sf-secondary hover:text-sf-dark">
                 Team
               </Link>
@@ -85,7 +88,7 @@ export default function Dashboard({ data, initialView = 'daily' }: DashboardProp
       {/* Footer */}
       <footer className="bg-white border-t border-sf-border mt-auto">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <p className="text-sm text-sf-secondary text-center">
+          <p className="caption text-center">
             Salesfire Call Coaching Dashboard
           </p>
         </div>

@@ -2,6 +2,7 @@
 
 import { Call } from '@/types';
 import OutcomeBadge from '@/components/ui/OutcomeBadge';
+import EmptyState from '@/components/ui/EmptyState';
 
 interface WinOfTheWeekProps {
   calls: Call[];
@@ -10,9 +11,13 @@ interface WinOfTheWeekProps {
 export default function WinOfTheWeek({ calls }: WinOfTheWeekProps) {
   if (calls.length === 0) {
     return (
-      <div className="bg-sf-card rounded-xl p-6 border border-sf-border">
-        <h2 className="text-lg font-semibold text-sf-dark mb-2">⭐ Win of the Week</h2>
-        <p className="text-sf-secondary">No calls reviewed yet this week — your first win is just around the corner!</p>
+      <div>
+        <h2 className="section-title mb-4">🏆 Win of the Week</h2>
+        <EmptyState
+          icon="⭐"
+          title="No calls reviewed yet this week"
+          description="Your first win is just around the corner. Make some calls and we’ll highlight your best one here."
+        />
       </div>
     );
   }
@@ -31,7 +36,7 @@ export default function WinOfTheWeek({ calls }: WinOfTheWeekProps) {
     <div className="bg-sf-card rounded-xl p-5 border-l-4 border-sf-good">
       <div className="flex items-center gap-2 mb-3">
         <span className="text-xl">🏆</span>
-        <h2 className="text-base font-semibold text-sf-dark">Win of the Week</h2>
+        <h2 className="card-title">Win of the Week</h2>
       </div>
 
       <div className="flex items-center justify-between gap-4">

@@ -44,7 +44,7 @@ function AccordionItem({
 export default function PlaybookSection({ playbook }: PlaybookSectionProps) {
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-sf-dark">Playbook</h2>
+      <h2 className="section-title mb-5">Playbook</h2>
 
       {/* WHY Connections */}
       <AccordionItem title="WHY Connections">

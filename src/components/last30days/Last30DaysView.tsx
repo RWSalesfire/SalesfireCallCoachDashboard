@@ -3,6 +3,7 @@
 import { DashboardData } from '@/types';
 import StatCard from '@/components/ui/StatCard';
 import WeeklyCallCard from '@/components/weekly/WeeklyCallCard';
+import EmptyState from '@/components/ui/EmptyState';
 
 interface Last30DaysViewProps {
   data: DashboardData;
@@ -22,7 +23,7 @@ export default function Last30DaysView({ data }: Last30DaysViewProps) {
 
       {/* Call List */}
       <div>
-        <h2 className="text-lg font-semibold text-sf-dark mb-4">All Calls</h2>
+        <h2 className="section-title mb-5">All Calls</h2>
         {last30DaysData.calls.length > 0 ? (
           <div className="space-y-3">
             {last30DaysData.calls.map((call) => (
@@ -30,9 +31,11 @@ export default function Last30DaysView({ data }: Last30DaysViewProps) {
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-xl p-8 shadow-card text-center">
-            <p className="text-sf-secondary">No analyzed calls in the last 30 days.</p>
-          </div>
+          <EmptyState
+            icon="📋"
+            title="No calls in the last 30 days"
+            description="Analysed calls from the past 30 days will appear here. Make some calls and we’ll surface them once they’re reviewed."
+          />
         )}
       </div>
     </div>

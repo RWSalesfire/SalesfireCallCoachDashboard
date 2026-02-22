@@ -1,6 +1,7 @@
 'use client';
 
 import { RadarScores } from '@/types';
+import EmptyState from '@/components/ui/EmptyState';
 
 interface SkillsBarChartProps {
   scores: RadarScores;
@@ -18,7 +19,24 @@ const skillLabels: Record<keyof RadarScores, string> = {
   close: 'Close',
 };
 
+function hasAnyScores(scores: RadarScores): boolean {
+  return (Object.keys(skillLabels) as (keyof RadarScores)[]).some((key) => scores[key] > 0);
+}
+
 export default function SkillsBarChart({ scores }: SkillsBarChartProps) {
+  if (!hasAnyScores(scores)) {
+    return (
+      <div>
+        <h2 className="section-title mb-4">Skills This Week</h2>
+        <EmptyState
+          icon="📊"
+          title="No skill scores yet"
+          description="Once you have reviewed calls this week, your skill breakdown will appear here."
+        />
+      </div>
+    );
+  }
+
   const entries = (Object.keys(skillLabels) as (keyof RadarScores)[])
     .map((key) => ({
       key,
@@ -41,7 +59,7 @@ export default function SkillsBarChart({ scores }: SkillsBarChartProps) {
 
   return (
     <div className="bg-sf-card rounded-xl p-5 border border-sf-border">
-      <h2 className="text-base font-semibold text-sf-dark mb-4">Skills This Week</h2>
+      <h2 className="section-title mb-4">Skills This Week</h2>
       <div className="space-y-2.5">
         {entries.map(({ key, label, score }) => (
           <div key={key} className="flex items-center gap-3">

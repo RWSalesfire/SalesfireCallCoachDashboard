@@ -11,9 +11,9 @@ export default function WeekFocusCard({ focus }: WeekFocusCardProps) {
     <div className="bg-white rounded-xl p-6 shadow-card border-l-4 border-sf-good">
       <div className="flex items-start gap-3 mb-4">
         <span className="text-2xl">📍</span>
-        <h3 className="text-lg font-semibold text-sf-dark">
+        <h2 className="card-title">
           This Week&apos;s Focus: {focus.title}
-        </h3>
+        </h2>
       </div>
 
       {/* Triggers */}

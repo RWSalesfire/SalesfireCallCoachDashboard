@@ -22,6 +22,44 @@ body {
   background-color: #ffffff;
 }
 
+/* Visual hierarchy – use these for consistent heading levels */
+.page-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 2.25rem;
+  color: var(--sf-dark);
+}
+.page-title-lg {
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 2.5rem;
+  color: var(--sf-dark);
+}
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.75rem;
+  color: var(--sf-dark);
+}
+.card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.5rem;
+  color: var(--sf-dark);
+}
+.body-muted {
+  font-size: 0.875rem;
+  color: var(--sf-secondary);
+  line-height: 1.4;
+}
+.caption {
+  font-size: 0.75rem;
+  color: var(--sf-secondary);
+  line-height: 1.3;
+}
+
 @keyframes fade-slide-up {
   from {
     opacity: 0;

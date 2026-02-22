@@ -14,9 +14,16 @@ interface DailyViewProps {
 export default function DailyView({ data }: DailyViewProps) {
   const { focusToday } = data;
   const focusPriorities = calculateFocusPriorities(data.weeklyData.calls);
+  const focusCount = focusPriorities.length;
+  const summaryLine =
+    focusCount > 0
+      ? `${focusCount} focus area${focusCount === 1 ? '' : 's'} today · Start with your win of the week below`
+      : 'Start with your win of the week and today’s focus below';
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
+      <p className="body-muted">{summaryLine}</p>
+
       {/* Win of the Week */}
       <section>
         <WinOfTheWeek calls={data.weeklyData.calls} />

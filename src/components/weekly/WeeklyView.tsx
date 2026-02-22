@@ -6,6 +6,7 @@ import WeeklyCallCard from './WeeklyCallCard';
 import ProgressSection from './ProgressSection';
 import WeekFocusCard from './WeekFocusCard';
 import PlaybookSection from './PlaybookSection';
+import EmptyState from '@/components/ui/EmptyState';
 
 interface WeeklyViewProps {
   data: DashboardData;
@@ -15,7 +16,7 @@ export default function WeeklyView({ data }: WeeklyViewProps) {
   const { weeklyData, playbook } = data;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Summary Stats */}
       <section>
         <WeeklySummaryStats data={weeklyData} />
@@ -28,8 +29,8 @@ export default function WeeklyView({ data }: WeeklyViewProps) {
 
       {/* This Week's Calls */}
       <section>
-        <div className="flex items-baseline justify-between mb-4">
-          <h2 className="text-xl font-semibold text-sf-dark">This Week&apos;s Calls</h2>
+        <div className="flex items-baseline justify-between mb-5">
+          <h2 className="section-title">This Week&apos;s Calls</h2>
           <span className="text-sm text-sf-secondary">{weeklyData.calls.length} calls</span>
         </div>
         <div className="space-y-3">
@@ -38,11 +39,11 @@ export default function WeeklyView({ data }: WeeklyViewProps) {
               <WeeklyCallCard key={call.id} call={call} />
             ))
           ) : (
-            <div className="bg-sf-card rounded-xl p-8 text-center">
-              <p className="text-sf-secondary">
-                No calls reviewed this week yet.
-              </p>
-            </div>
+            <EmptyState
+              icon="📞"
+              title="No calls reviewed this week yet"
+              description="Once calls are analysed, they’ll show up here so you can track progress and wins."
+            />
           )}
         </div>
       </section>
