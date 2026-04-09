@@ -9,20 +9,65 @@ on:
 jobs:
   trigger-pipeline:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     steps:
-      - name: Trigger daily pipeline
+      - name: Enrich calls from HubSpot
         run: |
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-            "${{ secrets.PIPELINE_URL }}/api/cron/daily-pipeline?secret=${{ secrets.CRON_SECRET }}")
+            "${{ secrets.PIPELINE_URL }}/api/cron/enrich-calls?secret=${{ secrets.CRON_SECRET }}")
 
           HTTP_CODE=$(echo "$RESPONSE" | tail -1)
           BODY=$(echo "$RESPONSE" | head -n -1)
 
-          echo "HTTP Status: $HTTP_CODE"
+          echo "=== Enrich: HTTP $HTTP_CODE ==="
+          echo "$BODY" | python3 -m json.tool 2>/dev/null || echo "$BODY"
+
+          if [ "$HTTP_CODE" -ge 500 ]; then
+            echo "::warning::Enrich returned HTTP $HTTP_CODE — continuing"
+          fi
+
+      - name: Transcribe calls with Deepgram
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 300 -X POST \
+            "${{ secrets.PIPELINE_URL }}/api/cron/transcribe-calls?secret=${{ secrets.CRON_SECRET }}")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          echo "=== Transcribe: HTTP $HTTP_CODE ==="
+          echo "$BODY" | python3 -m json.tool 2>/dev/null || echo "$BODY"
+
+          if [ "$HTTP_CODE" -ge 500 ]; then
+            echo "::warning::Transcribe returned HTTP $HTTP_CODE — continuing"
+          fi
+
+      - name: Analyze calls with Claude
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 300 -X POST \
+            "${{ secrets.PIPELINE_URL }}/api/cron/analyze-calls?secret=${{ secrets.CRON_SECRET }}")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          echo "=== Analyze: HTTP $HTTP_CODE ==="
+          echo "$BODY" | python3 -m json.tool 2>/dev/null || echo "$BODY"
+
+          if [ "$HTTP_CODE" -ge 500 ]; then
+            echo "::warning::Analyze returned HTTP $HTTP_CODE — continuing"
+          fi
+
+      - name: Aggregate daily stats
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 300 -X POST \
+            "${{ secrets.PIPELINE_URL }}/api/cron/aggregate-daily?secret=${{ secrets.CRON_SECRET }}")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          echo "=== Aggregate: HTTP $HTTP_CODE ==="
           echo "$BODY" | python3 -m json.tool 2>/dev/null || echo "$BODY"
 
           if [ "$HTTP_CODE" -ge 400 ]; then
-            echo "::error::Pipeline returned HTTP $HTTP_CODE"
+            echo "::error::Aggregate returned HTTP $HTTP_CODE"
             exit 1
           fi
