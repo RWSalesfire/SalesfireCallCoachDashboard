@@ -2,7 +2,7 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { analyzeCallTranscript } from '@/lib/claude';
 import { Call } from '@/lib/supabase';
 
-const MAX_CALLS_PER_RUN = 10;
+const MAX_CALLS_PER_RUN = 3;
 
 // Map score fields to their area_breakdown keys
 const SCORE_TO_AREA: Record<string, string> = {
