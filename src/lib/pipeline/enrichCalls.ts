@@ -18,19 +18,31 @@ export interface EnrichResult {
   details: { sdr: string; found: number; enriched: number; new_calls: number }[];
 }
 
-export async function runEnrichCalls(lookbackDays = 2): Promise<EnrichResult> {
+export interface EnrichOptions {
+  lookbackDays?: number;
+  // Explicit YYYY-MM-DD range overrides lookbackDays. Use for chunked backfills
+  // that must each finish inside the Vercel function time limit.
+  after?: string;
+  before?: string;
+}
+
+export async function runEnrichCalls(opts: EnrichOptions = {}): Promise<EnrichResult> {
+  const { lookbackDays = 2, after, before } = opts;
   const supabase = getSupabaseAdmin();
 
   if (!process.env.HUBSPOT_ACCESS_TOKEN) {
     throw new Error('HUBSPOT_ACCESS_TOKEN is not set');
   }
 
-  // Date range
+  // Date range: explicit after/before wins, otherwise now-lookbackDays → now
   const now = new Date();
-  const beforeDate = now.toISOString().split('T')[0];
-  const afterDateObj = new Date(now);
-  afterDateObj.setUTCDate(afterDateObj.getUTCDate() - lookbackDays);
-  const afterDate = afterDateObj.toISOString().split('T')[0];
+  const beforeDate = before || now.toISOString().split('T')[0];
+  let afterDate = after;
+  if (!afterDate) {
+    const afterDateObj = new Date(now);
+    afterDateObj.setUTCDate(afterDateObj.getUTCDate() - lookbackDays);
+    afterDate = afterDateObj.toISOString().split('T')[0];
+  }
 
   // Get all active SDRs
   const { data: sdrs, error: sdrError } = await supabase

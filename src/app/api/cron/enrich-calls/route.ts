@@ -18,9 +18,11 @@ export async function POST(request: NextRequest) {
   }
 
   const days = Number(request.nextUrl.searchParams.get('days')) || 2;
+  const after = request.nextUrl.searchParams.get('after') || undefined;
+  const before = request.nextUrl.searchParams.get('before') || undefined;
 
   try {
-    const result = await runEnrichCalls(days);
+    const result = await runEnrichCalls({ lookbackDays: days, after, before });
     return NextResponse.json(result);
   } catch (err) {
     console.error('Enrich calls error:', err);
