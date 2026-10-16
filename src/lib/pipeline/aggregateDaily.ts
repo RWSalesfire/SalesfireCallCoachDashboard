@@ -162,11 +162,23 @@ export async function runAggregateDaily(): Promise<AggregateResult> {
       }
     }
 
-    // ── Weekly summary (on Sundays) ──
-    if (isSunday) {
+    // ── Weekly summary (every run, week to date) ──
+    // Covers the week containing yesterday, so Tuesday to Friday runs keep the
+    // current week fresh and Monday's run (yesterday = Sunday) writes last
+    // week's final figures. Was Sundays only, which left the Monday huddle
+    // waiting on GitHub's late first run of the day.
+    {
       const weekNum = getISOWeekNumber(yesterdayDate);
       const year = yesterdayDate.getUTCFullYear();
       const { start: weekStart, end: weekEnd } = getWeekBounds(yesterdayDate);
+
+      const { data: existing } = await supabase
+        .from('weekly_summaries')
+        .select('calls_reviewed, week_focus_title')
+        .eq('sdr_id', sdr.id)
+        .eq('week_number', weekNum)
+        .eq('year', year)
+        .maybeSingle();
 
       const { data: weekAnalyses } = await supabase
         .from('call_analyses')
@@ -219,8 +231,12 @@ export async function runAggregateDaily(): Promise<AggregateResult> {
 
         result.weekly = !weeklyError;
 
-        // Generate weekly focus coaching advice
-        if (wa.length >= 2) {
+        // Generate weekly focus coaching advice. Only when the week has new
+        // analyses since the last write, so six runs a day do not mean six
+        // Claude calls per SDR.
+        const unchanged =
+          existing?.week_focus_title && existing.calls_reviewed === wa.length;
+        if (wa.length >= 2 && !unchanged) {
           try {
             const weekCompanies = await Promise.all(
               wa.map(async (a: CallAnalysis) => {
