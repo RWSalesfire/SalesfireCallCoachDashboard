@@ -3,6 +3,7 @@ import { analyzeCallTranscript } from '@/lib/claude';
 import { Call } from '@/lib/supabase';
 
 const MAX_CALLS_PER_RUN = 3;
+const PAGE_SIZE = 1000;
 
 // Map score fields to their area_breakdown keys
 const SCORE_TO_AREA: Record<string, string> = {
@@ -68,27 +69,48 @@ export interface AnalyzeResult {
 export async function runAnalyzeCalls(): Promise<AnalyzeResult> {
   const supabase = getSupabaseAdmin();
 
-  // Get IDs of calls that already have analyses
-  const { data: existingAnalyses } = await supabase
-    .from('call_analyses')
-    .select('call_id');
-
-  const analyzedCallIds = (existingAnalyses || []).map((a: { call_id: string }) => a.call_id);
-
-  // Find calls with transcripts that haven't been analysed yet
-  let query = supabase
-    .from('calls')
-    .select('*')
-    .not('transcript', 'is', null)
-    .neq('transcript', '')
-    .order('created_at', { ascending: true })
-    .limit(MAX_CALLS_PER_RUN);
-
-  if (analyzedCallIds.length > 0) {
-    query = query.not('id', 'in', `(${analyzedCallIds.join(',')})`);
+  // Get IDs of calls that already have analyses. Paged, because PostgREST caps
+  // a response at 1,000 rows.
+  const analyzedCallIds = new Set<string>();
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from('call_analyses')
+      .select('call_id')
+      .range(from, from + PAGE_SIZE - 1);
+    if (error) throw new Error(`Failed to fetch analyses: ${error.message}`);
+    (data || []).forEach((a: { call_id: string }) => analyzedCallIds.add(a.call_id));
+    if (!data || data.length < PAGE_SIZE) break;
   }
 
-  const { data: callsToAnalyze, error: fetchError } = await query;
+  // Find calls with transcripts that haven't been analysed yet. Filtered here,
+  // not with `not.in.(...)`: every analysed ID in the URL broke the request
+  // with "Bad Request" once there were ~640 of them (Oct 2026).
+  const pendingIds: string[] = [];
+  for (let from = 0; pendingIds.length < MAX_CALLS_PER_RUN; from += PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from('calls')
+      .select('id')
+      .not('transcript', 'is', null)
+      .neq('transcript', '')
+      .order('created_at', { ascending: true })
+      .range(from, from + PAGE_SIZE - 1);
+    if (error) throw new Error(`Failed to fetch calls: ${error.message}`);
+    for (const c of data || []) {
+      if (!analyzedCallIds.has(c.id)) pendingIds.push(c.id);
+      if (pendingIds.length >= MAX_CALLS_PER_RUN) break;
+    }
+    if (!data || data.length < PAGE_SIZE) break;
+  }
+
+  if (pendingIds.length === 0) {
+    return { processed: 0, succeeded: 0, failed: 0, results: [] };
+  }
+
+  const { data: callsToAnalyze, error: fetchError } = await supabase
+    .from('calls')
+    .select('*')
+    .in('id', pendingIds)
+    .order('created_at', { ascending: true });
 
   if (fetchError) {
     throw new Error(`Failed to fetch calls: ${fetchError.message}`);
