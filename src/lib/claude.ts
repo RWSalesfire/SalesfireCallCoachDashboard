@@ -1,13 +1,13 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Call, CallAnalysis } from './supabase';
 
-const getClient = () => {
+export const getClient = () => {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) throw new Error('Missing ANTHROPIC_API_KEY');
   return new Anthropic({ apiKey: key });
 };
 
-const MODEL = 'claude-sonnet-4-5-20250929';
+export const MODEL = 'claude-sonnet-4-5-20250929';
 
 // ──────────────────────────────────────────────
 // Analyze a single call transcript
@@ -78,6 +78,8 @@ Also provide:
 - key_moment: quote or describe the most impactful moment
 - improvement: the single highest-leverage improvement for this SDR
 
+Never invent figures, percentages, results or customer stories about Salesfire in any field. If a suggested line needs a proof point, write "[your proof point]".
+
 IMPORTANT: The area_breakdown object must contain an entry for EVERY skill area that has a numeric score (not null). If a score is null, do NOT include that area in area_breakdown. If a score is a number, you MUST include it.
 
 Respond with ONLY a valid JSON object matching this exact structure (no markdown, no backticks):
@@ -112,7 +114,7 @@ Respond with ONLY a valid JSON object matching this exact structure (no markdown
   }
 }`;
 
-function stripCodeFence(text: string): string {
+export function stripCodeFence(text: string): string {
   const trimmed = text.trim();
   if (trimmed.startsWith('```')) {
     return trimmed.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '');

@@ -66,7 +66,9 @@ export interface AnalyzeResult {
   results: { call_id: string; success: boolean; error?: string }[];
 }
 
-export async function runAnalyzeCalls(): Promise<AnalyzeResult> {
+// Each analysis takes ~60s, so callers with a time budget pass a smaller limit.
+export async function runAnalyzeCalls(limit: number = MAX_CALLS_PER_RUN): Promise<AnalyzeResult> {
+  if (limit <= 0) return { processed: 0, succeeded: 0, failed: 0, results: [] };
   const supabase = getSupabaseAdmin();
 
   // Get IDs of calls that already have analyses. Paged, because PostgREST caps
@@ -86,7 +88,7 @@ export async function runAnalyzeCalls(): Promise<AnalyzeResult> {
   // not with `not.in.(...)`: every analysed ID in the URL broke the request
   // with "Bad Request" once there were ~640 of them (Oct 2026).
   const pendingIds: string[] = [];
-  for (let from = 0; pendingIds.length < MAX_CALLS_PER_RUN; from += PAGE_SIZE) {
+  for (let from = 0; pendingIds.length < limit; from += PAGE_SIZE) {
     const { data, error } = await supabase
       .from('calls')
       .select('id')
@@ -97,7 +99,7 @@ export async function runAnalyzeCalls(): Promise<AnalyzeResult> {
     if (error) throw new Error(`Failed to fetch calls: ${error.message}`);
     for (const c of data || []) {
       if (!analyzedCallIds.has(c.id)) pendingIds.push(c.id);
-      if (pendingIds.length >= MAX_CALLS_PER_RUN) break;
+      if (pendingIds.length >= limit) break;
     }
     if (!data || data.length < PAGE_SIZE) break;
   }

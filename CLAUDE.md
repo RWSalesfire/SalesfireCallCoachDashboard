@@ -2,6 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Brief (kickoff 16 Nov 2026)
+
+- **Problem:** the dashboard isn't used weekly. What's needed is coaching points to use in 1:1s, huddles and later training sessions. The pipeline has failed silently three times and missed most scheduled runs (GitHub drops them).
+- **New shape:** keep the pipeline (HubSpot → Deepgram → Claude scoring). Replace the dashboard with a **weekly pod brief** emailed to both people in each pod (Russell/Katie, Ashleigh/Steph, Kev/Jack, Charlie/Tracy). Dashboard archived: not maintained, not deleted.
+- **Done:** every Monday by 8am the brief arrives with every call from the past week scored, and Russell uses at least one point from it in a 1:1 or huddle every week for 4 weeks (to 14 Dec 2026).
+- **Appetite:** one-off rebuild, built autonomously. Running cost: a 5-minute check, under half a day a week. Training sessions wait until the brief has proved itself.
+- **Top risk:** free API credits (Anthropic, Deepgram) run out silently; nobody acts on the brief.
+- **Dependencies:** scheduler, Vercel Hobby, Supabase free tier, HubSpot token, Deepgram free credit, Anthropic free credits, `sdrs` roster maintained by hand. None are paid.
+- **Monitoring (all to Russell's Telegram):** step errors; didn't run (dead man's switch); zero calls enriched on a weekday or backlog over 10; run over 10 min or backlog growing across three runs; credit or token errors alert immediately.
+- **Learning goal:** why scheduled jobs are unreliable and how a "didn't run" alarm works.
+
 ## Project Overview
 
 SDR Call Coaching Dashboard — a Next.js 14 app that displays daily and weekly coaching views for sales development representatives. Built with TypeScript, Tailwind CSS, Recharts, and Supabase (PostgreSQL). Deployed on Vercel.
