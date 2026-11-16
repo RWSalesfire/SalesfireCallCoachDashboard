@@ -82,7 +82,9 @@ async function askJson<T>(prompt: string, maxTokens: number): Promise<T> {
 // revenue") is a real risk. A % or £ figure only counts as real if it was
 // said on a call (the transcripts); the per-call analyses have invented
 // figures before. Otherwise: one rewrite, then a placeholder.
-const FIGURE = /£\s?[\d,.]+k?|\b\d+(?:\.\d+)?(?:\s?-\s?\d+(?:\.\d+)?)?\s?%/gi;
+// £ amounts take thousands commas and decimals but never a trailing comma or
+// full stop ("worth £2,000." must match "£2,000" said on the call).
+const FIGURE = /£\s?\d+(?:,\d{3})*(?:\.\d+)?k?|(?<![\d.])\d+(?:\.\d+)?(?:\s?-\s?\d+(?:\.\d+)?)?\s?%/gi;
 const norm = (s: string) => s.replace(/\s/g, '').toLowerCase();
 
 function inventedFigures(output: unknown, source: string): string[] {
@@ -98,8 +100,9 @@ async function askGrounded<T>(prompt: string, source: string, maxTokens: number)
   out = await askJson<T>(`${prompt}\n\nYour previous answer used figures that are not in the call data: ${invented.join(', ')}. Rewrite without them; use "[your proof point]" where a proof point is needed.`, maxTokens);
   invented = inventedFigures(out, source);
   if (invented.length === 0) return out;
-  let json = JSON.stringify(out);
-  for (const f of invented) json = json.split(f).join('[your proof point]');
+  // Replace whole matches only, so removing "5%" can't turn a real "15%" into "1[...]".
+  const bad = new Set(invented.map(norm));
+  const json = JSON.stringify(out).replace(FIGURE, (m) => (bad.has(norm(m)) ? '[your proof point]' : m));
   return JSON.parse(json) as T;
 }
 

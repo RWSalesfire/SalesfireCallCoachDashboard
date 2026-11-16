@@ -65,12 +65,12 @@ SDR Call Coaching Dashboard — a Next.js 14 app that displays daily and weekly 
 
 ## Deployment & Cron
 
-- Hosted on Vercel Hobby plan — **cron jobs in vercel.json do NOT run** on Hobby
-- GitHub Actions (`.github/workflows/pipeline-cron.yml`) triggers the pipeline 6x daily Mon-Fri (5am, 8am, 11am, 2pm, 5pm, 8pm UTC)
-- Requires GitHub repo secrets: `PIPELINE_URL` (Vercel production URL) and `CRON_SECRET`
+- Hosted on Vercel Hobby plan. **Cron jobs in vercel.json do NOT run** on Hobby; scheduling is Supabase pg_cron (see "How it runs now").
+- GitHub Actions scheduling was removed on 16 Nov 2026 (it dropped most runs and auto-disabled after 60 days).
 - Production URL: `salesfire-call-coach-dashboard.vercel.app`
 - Vercel project/org IDs in `.vercel/project.json`
-- Trigger manually: `gh workflow run "Trigger Daily Pipeline" --repo RWSalesfire/SalesfireCallCoachDashboard`
+- Trigger manually (in Supabase SQL): `select call_coach_trigger('/api/cron/nightly');`
+- Deploy only from git (push to main). The working tree holds undeployable WIP, so never `vercel --prod` from it; to pick up new env vars run `vercel redeploy <latest prod url> --target production`.
 
 ## Gotchas
 

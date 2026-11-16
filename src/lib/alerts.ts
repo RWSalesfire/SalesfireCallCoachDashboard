@@ -34,7 +34,9 @@ export async function pingHealthcheck(url: string | undefined, outcome: 'success
 
 // Running out of free API credit has stopped the pipeline before (Oct 2026),
 // hidden inside per-call error messages. Detect it so it alerts as urgent.
-const CREDIT_ERROR = /credit balance|insufficient|quota|billing|payment required|\b402\b/i;
+// "insufficient" alone also matches "insufficient scopes" (a permission
+// problem), so it only counts when followed by credit/funds/balance.
+const CREDIT_ERROR = /credit balance|insufficient[_ ](credit|fund|balance)|quota|billing|payment required|\b402\b/i;
 
 export function isCreditError(message: string): boolean {
   return CREDIT_ERROR.test(message);

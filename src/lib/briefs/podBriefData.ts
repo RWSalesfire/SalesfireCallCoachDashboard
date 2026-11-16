@@ -65,7 +65,7 @@ export async function getPods(): Promise<Pod[]> {
 
 type AnalysisRow = {
   analysis_date: string; overall_score: number; insight: string | null; key_moment: string | null;
-  improvement: string | null; area_breakdown: ScoredCall['areas'] | null; calls: { company: string | null; transcript: string | null } | null;
+  improvement: string | null; area_breakdown: ScoredCall['areas'] | null; call_id: string; calls: { company: string | null } | null;
 };
 
 export async function getPodWeek(pod: Pod, weekStart: string): Promise<PodWeek> {
@@ -74,7 +74,7 @@ export async function getPodWeek(pod: Pod, weekStart: string): Promise<PodWeek> 
   const priorStart = addDays(weekStart, -28);
 
   const { data, error } = await db.from('call_analyses')
-    .select('analysis_date, overall_score, insight, key_moment, improvement, area_breakdown, calls(company, transcript)')
+    .select('analysis_date, overall_score, insight, key_moment, improvement, area_breakdown, call_id, calls(company)')
     .eq('sdr_id', pod.sdr_id)
     .gte('analysis_date', priorStart).lte('analysis_date', weekEnd)
     .order('analysis_date', { ascending: true });
@@ -83,6 +83,15 @@ export async function getPodWeek(pod: Pod, weekStart: string): Promise<PodWeek> 
   const rows = (data || []) as unknown as AnalysisRow[];
   const thisWeek = rows.filter((r) => r.analysis_date >= weekStart);
   const prior = rows.filter((r) => r.analysis_date < weekStart);
+
+  // Transcripts are large and only needed for this week (to check figures).
+  const transcripts = new Map<string, string>();
+  if (thisWeek.length > 0) {
+    const { data: tx, error: txError } = await db.from('calls').select('id, transcript')
+      .in('id', thisWeek.map((r) => r.call_id));
+    if (txError) throw new Error(`Failed to load transcripts for ${pod.pe_name}: ${txError.message}`);
+    for (const t of tx || []) transcripts.set(t.id, t.transcript || '');
+  }
 
   const areaScores = (rs: AnalysisRow[], area: string) =>
     rs.map((r) => r.area_breakdown?.[area]?.score).filter((s): s is number => typeof s === 'number');
@@ -106,7 +115,7 @@ export async function getPodWeek(pod: Pod, weekStart: string): Promise<PodWeek> 
       key_moment: r.key_moment || '',
       improvement: r.improvement || '',
       areas: r.area_breakdown || {},
-      transcript: r.calls?.transcript || '',
+      transcript: transcripts.get(r.call_id) || '',
     })),
     avg_overall: avg(thisWeek.map((r) => r.overall_score)),
     prior_avg_overall: avg(prior.map((r) => r.overall_score)),

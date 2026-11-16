@@ -108,7 +108,15 @@ export async function runNightly({ final }: { final: boolean }): Promise<Nightly
   const { data: run } = await db.from('pipeline_runs').insert({ kind: 'nightly' }).select('id').single();
   result.run_id = run?.id ?? null;
 
-  await step(result, 'enrich', () => runEnrichCalls());
+  // Enrich catches each SDR's HubSpot error and carries on, so an expired
+  // token would otherwise look like a quiet night.
+  const enriched = await step(result, 'enrich', () => runEnrichCalls());
+  if (enriched && enriched.errors.length > 0) {
+    const first = enriched.errors[0];
+    result.alerts.push(isCreditError(first)
+      ? `URGENT enrich: out of API credit. ${first.slice(0, 200)}`
+      : `enrich: ${enriched.errors.length} HubSpot error(s). First: ${first.slice(0, 200)}`);
+  }
   const transcribed = await step(result, 'transcribe', () => runTranscribeCalls());
   if (transcribed) perCallFailures(result, 'transcribe', transcribed.results);
 
@@ -134,8 +142,9 @@ export async function runNightly({ final }: { final: boolean }): Promise<Nightly
     // Yesterday was a working day (runs are Tue-Sat), so zero calls means
     // HubSpot enrichment is broken, not that nobody called.
     const day = yesterdayUtc().toISOString().split('T')[0];
-    const { count } = await db.from('calls').select('id', { count: 'exact', head: true }).eq('call_date', day);
-    if (!count) result.alerts.push(`no calls at all recorded for ${day}. Check HubSpot enrichment (or was it a bank holiday?).`);
+    const { count, error } = await db.from('calls').select('id', { count: 'exact', head: true }).eq('call_date', day);
+    if (error) result.alerts.push(`could not check yesterday's call count: ${error.message.slice(0, 200)}`);
+    else if (!count) result.alerts.push(`no calls at all recorded for ${day}. Check HubSpot enrichment (or was it a bank holiday?).`);
   }
 
   if (run) {

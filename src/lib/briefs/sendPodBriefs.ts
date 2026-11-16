@@ -29,16 +29,20 @@ export async function sendPodBriefs(now = new Date()): Promise<SendBriefsResult>
   const teamTo = process.env.BRIEF_TEAM_TO || process.env.GMAIL_USER;
   const result: SendBriefsResult = { week_start: weekStart, mode, sent: [], skipped: [], failed: [], alerts: [] };
 
-  const { data: already } = await db.from('pod_briefs').select('brief_key')
+  // If we can't tell what's already gone, stop: guessing "nothing" would
+  // re-send every brief on the retry run.
+  const { data: already, error: readError } = await db.from('pod_briefs').select('brief_key')
     .eq('week_start', weekStart).eq('mode', mode);
+  if (readError) throw new Error(`Could not read pod_briefs, so nothing was sent: ${readError.message}`);
   const done = new Set((already || []).map((r) => r.brief_key));
 
   const send = async (key: string, to: string[], email: { subject: string; html: string; text: string }) => {
     const recipients = reviewTo ? [reviewTo] : to;
     const subject = reviewTo ? `[Review] ${email.subject}` : email.subject;
     await sendEmail({ ...email, to: recipients, subject });
-    await db.from('pod_briefs').insert({ week_start: weekStart, brief_key: key, mode, sent_to: recipients, subject });
     result.sent.push(key);
+    const { error } = await db.from('pod_briefs').insert({ week_start: weekStart, brief_key: key, mode, sent_to: recipients, subject });
+    if (error) result.alerts.push(`${key} was sent but not recorded (${error.message.slice(0, 120)}), so the 06:50 retry will send it again.`);
   };
 
   const notes: string[] = [];
@@ -49,27 +53,31 @@ export async function sendPodBriefs(now = new Date()): Promise<SendBriefsResult>
     result.alerts.push(msg);
   }
 
-  const weeks: PodWeek[] = [];
-  for (const pod of await getPods()) {
+  // Pods run in parallel: each needs up to two Claude calls (~25s each), and
+  // in sequence four pods plus the team theme get close to the 300s limit.
+  const pods = await getPods();
+  const podWeeks = await Promise.all(pods.map(async (pod): Promise<PodWeek | null> => {
     const key = `pod:${pod.sdr_id}`;
     try {
       const week = await getPodWeek(pod, weekStart);
-      weeks.push(week);
-      if (done.has(key)) { result.skipped.push(key); continue; }
+      if (done.has(key)) { result.skipped.push(key); return week; }
       if (week.calls.length < MIN_CALLS_FOR_BRIEF) {
         notes.push(`${pod.pe_name}: no scored calls last week, so no pod brief was sent.`);
         result.skipped.push(key);
-        continue;
+        return week;
       }
       const content = await writePodBrief(week);
       const reviewNote = reviewTo ? `Review copy. Live, this goes to ${pod.pe_email} and ${pod.gd_email}.` : undefined;
       await send(key, [pod.pe_email, pod.gd_email], renderPodEmail(week, content, reviewNote));
+      return week;
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       result.failed.push(key);
       result.alerts.push(`pod brief for ${pod.pe_name} failed: ${message.slice(0, 200)}`);
+      return null;
     }
-  }
+  }));
+  const weeks = podWeeks.filter((w): w is PodWeek => w !== null);
 
   if (!done.has('team') && teamTo) {
     try {
