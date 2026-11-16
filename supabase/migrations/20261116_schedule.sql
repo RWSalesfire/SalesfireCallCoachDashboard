@@ -8,7 +8,7 @@ create extension if not exists pg_cron;
 create extension if not exists pg_net;
 
 create or replace function call_coach_trigger(path text) returns void
-language sql security definer as $$
+language sql security definer set search_path = public, extensions as $$
   select net.http_post(
     url := 'https://salesfire-call-coach-dashboard.vercel.app' || path,
     headers := jsonb_build_object(
@@ -19,6 +19,7 @@ language sql security definer as $$
     timeout_milliseconds := 300000
   );
 $$;
+revoke execute on function call_coach_trigger(text) from public, anon, authenticated;
 
 -- Overnight Tue-Sat, processing the previous working day: every 20 minutes
 -- 00:00-04:40, then the end-of-night checks at 04:55.

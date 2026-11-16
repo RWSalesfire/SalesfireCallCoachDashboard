@@ -10,6 +10,7 @@ import { runEnrichCalls } from './enrichCalls';
 import { runTranscribeCalls } from './transcribeCalls';
 import { runAnalyzeCalls } from './analyzeCalls';
 import { isCreditError } from '@/lib/alerts';
+import { checkEmailAuth } from '@/lib/email';
 
 const TIME_BUDGET_MS = 240_000; // Vercel kills the function at 300s
 const SECS_PER_ANALYSIS = 75_000;
@@ -124,6 +125,8 @@ export async function runNightly({ final }: { final: boolean }): Promise<Nightly
   }
 
   if (final) {
+    // The Monday emails depend on the Gmail grant; catch a dead one early.
+    await step(result, 'email permission', checkEmailAuth);
     const waiting = result.backlog.awaiting_transcription + result.backlog.awaiting_analysis;
     if (waiting > 0) {
       result.alerts.push(`backlog not cleared overnight: ${result.backlog.awaiting_transcription} awaiting transcription, ${result.backlog.awaiting_analysis} awaiting analysis.`);
