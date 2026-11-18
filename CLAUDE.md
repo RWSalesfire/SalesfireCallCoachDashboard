@@ -6,11 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Problem:** the dashboard isn't used weekly. What's needed is coaching points to use in 1:1s, huddles and later training sessions. The pipeline has failed silently three times and missed most scheduled runs (GitHub drops them).
 - **New shape:** keep the pipeline (HubSpot → Deepgram → Claude scoring). Replace the dashboard with a **weekly pod brief** emailed to both people in each pod (Russell/Katie, Ashleigh/Steph, Kev/Jack, Charlie/Tracy). Dashboard archived: not maintained, not deleted.
-- **Done:** every Monday by 8am the brief arrives with every call from the past week scored, and Russell uses at least one point from it in a 1:1 or huddle every week for 4 weeks (to 14 Dec 2026).
+- **Done:** every Monday by 8am the brief arrives with every call from the past week scored, and Russell uses at least one point from it in a 1:1 or huddle every week for 4 weeks (to 14 Dec 2026). Usage is judged by feel, not tracked (Russell's choice, 18 Nov). Going live to pods is Russell's call once the Growth Directors and Tim approve.
 - **Appetite:** one-off rebuild, built autonomously. Running cost: a 5-minute check, under half a day a week. Training sessions wait until the brief has proved itself.
 - **Top risk:** free API credits (Anthropic, Deepgram) run out silently; nobody acts on the brief.
 - **Dependencies:** scheduler, Vercel Hobby, Supabase free tier, HubSpot token, Deepgram free credit, Anthropic free credits, `sdrs` roster maintained by hand. None are paid.
-- **Monitoring (all to Russell's Telegram):** step errors; didn't run (dead man's switch); zero calls enriched on a weekday or backlog over 10; run over 10 min or backlog growing across three runs; credit or token errors alert immediately.
+- **Monitoring (all to Russell's Telegram, tested 16-18 Nov):** step and HubSpot errors; didn't run (healthchecks.io, nightly + briefs); zero calls on a working day (UK bank holidays skipped); backlog not cleared overnight; scoring sanity (a day's scores all identical or averaging outside 1.5-8.5); slow (>270s) or dead runs; credit errors URGENT on first failure plus a first-Tuesday monthly reminder to check Anthropic and Deepgram credit (neither balance is readable by API); Gmail grant checked nightly.
 - **Learning goal:** why scheduled jobs are unreliable and how a "didn't run" alarm works.
 
 ## How it runs now (from 16 Nov 2026)

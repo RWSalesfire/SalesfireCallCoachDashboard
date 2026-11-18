@@ -11,10 +11,11 @@ import { runTranscribeCalls } from './transcribeCalls';
 import { runAnalyzeCalls } from './analyzeCalls';
 import { isCreditError } from '@/lib/alerts';
 import { checkEmailAuth } from '@/lib/email';
+import { RUBRIC_VERSION } from '@/lib/scoring/rubric';
 
 const TIME_BUDGET_MS = 240_000; // Vercel kills the function at 300s
-const SECS_PER_ANALYSIS = 75_000;
-const MAX_ANALYSES = 3;
+const MS_PER_ANALYSIS = 35_000; // Sonnet 5.5 scores a call in ~20-25s (Nov 2026)
+const MAX_ANALYSES = 6;
 const SLOW_RUN_MS = 270_000;
 const DEAD_RUN_AFTER_MS = 10 * 60_000;
 
@@ -50,6 +51,37 @@ export async function getBacklog(): Promise<Backlog> {
     awaiting_transcription: awaitingTranscription,
     awaiting_analysis: Math.max(0, transcribed - analysed),
   };
+}
+
+// England and Wales bank holidays from gov.uk. If the list can't be fetched,
+// assume a normal day: a rare false alert beats a missed outage.
+export async function isBankHoliday(day: string): Promise<boolean> {
+  try {
+    const res = await fetch('https://www.gov.uk/bank-holidays.json');
+    if (!res.ok) return false;
+    const body = await res.json() as { 'england-and-wales'?: { events?: { date: string }[] } };
+    return (body['england-and-wales']?.events || []).some((e) => e.date === day);
+  } catch {
+    return false;
+  }
+}
+
+// Catches a broken rubric or prompt: every call scored the same, or a whole
+// day's average far outside the normal 3-6 range.
+export async function scoringSanity(day: string): Promise<string | null> {
+  const { data, error } = await getSupabaseAdmin().from('call_analyses').select('overall_score')
+    .eq('analysis_date', day).eq('rubric_version', RUBRIC_VERSION);
+  if (error) return `could not check yesterday's scores: ${error.message.slice(0, 200)}`;
+  const scores = (data || []).map((r: { overall_score: number | null }) => Number(r.overall_score)).filter((n) => !Number.isNaN(n));
+  return judgeScores(scores, day);
+}
+
+export function judgeScores(scores: number[], day: string): string | null {
+  if (scores.length < 3) return null;
+  const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+  if (new Set(scores).size === 1) return `scoring looks broken: all ${scores.length} calls from ${day} scored exactly ${scores[0]}.`;
+  if (avg < 1.5 || avg > 8.5) return `scoring looks off: ${scores.length} calls from ${day} averaged ${avg.toFixed(1)} (normal is about 3-6). Check the rubric.`;
+  return null;
 }
 
 function yesterdayUtc(): Date {
@@ -121,7 +153,7 @@ export async function runNightly({ final }: { final: boolean }): Promise<Nightly
   if (transcribed) perCallFailures(result, 'transcribe', transcribed.results);
 
   const remaining = TIME_BUDGET_MS - (Date.now() - started);
-  const analyseLimit = Math.min(MAX_ANALYSES, Math.floor(remaining / SECS_PER_ANALYSIS));
+  const analyseLimit = Math.min(MAX_ANALYSES, Math.floor(remaining / MS_PER_ANALYSIS));
   const analysed = await step(result, 'analyse', () => runAnalyzeCalls(analyseLimit));
   if (analysed) perCallFailures(result, 'analyse', analysed.results);
 
@@ -140,11 +172,22 @@ export async function runNightly({ final }: { final: boolean }): Promise<Nightly
       result.alerts.push(`backlog not cleared overnight: ${result.backlog.awaiting_transcription} awaiting transcription, ${result.backlog.awaiting_analysis} awaiting analysis.`);
     }
     // Yesterday was a working day (runs are Tue-Sat), so zero calls means
-    // HubSpot enrichment is broken, not that nobody called.
+    // HubSpot enrichment is broken, not that nobody called. Bank holidays excepted.
     const day = yesterdayUtc().toISOString().split('T')[0];
     const { count, error } = await db.from('calls').select('id', { count: 'exact', head: true }).eq('call_date', day);
     if (error) result.alerts.push(`could not check yesterday's call count: ${error.message.slice(0, 200)}`);
-    else if (!count) result.alerts.push(`no calls at all recorded for ${day}. Check HubSpot enrichment (or was it a bank holiday?).`);
+    else if (!count && !(await isBankHoliday(day))) result.alerts.push(`no calls at all recorded for ${day}. Check HubSpot enrichment.`);
+
+    const sanity = await scoringSanity(day);
+    if (sanity) result.alerts.push(sanity);
+
+    // Neither Anthropic nor Deepgram exposes the free credit balance to these
+    // keys, so a monthly nudge (first Tuesday) is the early warning; running
+    // out mid-month still raises an URGENT alert on the first failed call.
+    const now = new Date();
+    if (now.getUTCDay() === 2 && now.getUTCDate() <= 7) {
+      result.alerts.push('monthly reminder: check the Anthropic (console.anthropic.com, Billing) and Deepgram (console.deepgram.com, Billing) credit balances. Scoring stops the day either runs out.');
+    }
   }
 
   if (run) {
