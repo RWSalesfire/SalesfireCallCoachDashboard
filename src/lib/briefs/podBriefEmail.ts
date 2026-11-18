@@ -31,6 +31,16 @@ export function renderPodEmail(week: PodWeek, b: PodBriefContent, reviewNote?: s
   const numbers = `${week.calls.length} calls scored, average ${week.avg_overall}/10${trend(week.avg_overall, week.prior_avg_overall)}.`
     + (strongest && weakest && strongest !== weakest ? ` Strongest: ${strongest.label} (${strongest.avg}). Weakest: ${weakest.label} (${weakest.avg}).` : '');
 
+  // Out-of-date lines the rep used, straight from the scoring (no AI rewording),
+  // one per correct line so a habit repeated across calls shows once.
+  const fixes = Array.from(new Map(week.calls.flatMap((c) => c.claim_flags.map((f) => [f.correct_line, { ...f, company: c.company }]))).values());
+  const fixesHtml = fixes.length
+    ? h('Lines to update') + `<ul>${fixes.map((f) => `<li>Said "${esc(f.said)}" (${esc(f.company)}). Use instead: ${esc(f.correct_line)}</li>`).join('')}</ul>`
+    : '';
+  const fixesText = fixes.length
+    ? ['LINES TO UPDATE', ...fixes.map((f) => `- Said "${f.said}" (${f.company}). Use instead: ${f.correct_line}`)].join('\n')
+    : '';
+
   const points = b.coaching_points.map((c, i) =>
     `<p style="margin:10px 0"><b>${i + 1}. ${esc(c.title)}</b><br>${esc(c.evidence)}<br><i>Why it matters:</i> ${esc(c.why)}<br><i>Next call:</i> ${esc(c.try_next)}</p>`).join('');
 
@@ -41,13 +51,14 @@ export function renderPodEmail(week: PodWeek, b: PodBriefContent, reviewNote?: s
     + `<p>${esc(numbers)}</p>`
     + h('Coaching points') + points
     + h('Keep doing') + `<p>${esc(b.keep_doing)}</p>`
-    + h(`1:1 drill: ${b.drill.title}`) + `<p>${esc(b.drill.setup)}</p><p>${esc(b.drill.how)}</p>`,
+    + h(`1:1 drill: ${b.drill.title}`) + `<p>${esc(b.drill.setup)}</p><p>${esc(b.drill.how)}</p>`
+    + fixesHtml,
   );
 
   const text = [
     reviewNote, `${first(p.pe_name)} and ${first(p.gd_name)},`, b.headline, numbers,
     'COACHING POINTS', ...b.coaching_points.map((c, i) => `${i + 1}. ${c.title}\n${c.evidence}\nWhy it matters: ${c.why}\nNext call: ${c.try_next}`),
-    'KEEP DOING', b.keep_doing, `1:1 DRILL: ${b.drill.title}`, b.drill.setup, b.drill.how, FOOTER,
+    'KEEP DOING', b.keep_doing, `1:1 DRILL: ${b.drill.title}`, b.drill.setup, b.drill.how, fixesText, FOOTER,
   ].filter(Boolean).join('\n\n');
 
   return { subject, html, text };

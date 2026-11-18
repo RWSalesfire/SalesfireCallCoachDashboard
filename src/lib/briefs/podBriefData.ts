@@ -2,12 +2,8 @@
 // never from Claude, so the figures can be trusted.
 
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-
-export const AREAS: Record<string, string> = {
-  gatekeeper: 'Gatekeeper', opener: 'Opener', personalisation: 'Personalisation',
-  discovery: 'Discovery', callControl: 'Call control', toneEnergy: 'Tone and energy',
-  valueProp: 'Value proposition', objections: 'Objections', close: 'Close',
-};
+import { BEAT_LABELS, RUBRIC_VERSION } from '@/lib/scoring/rubric';
+import type { ClaimFlag } from '@/lib/scoring/scoreCall';
 
 export interface Pod {
   sdr_id: string;
@@ -25,6 +21,7 @@ export interface ScoredCall {
   key_moment: string;
   improvement: string;
   areas: Record<string, { score: number; well: string; improve: string; try_next: string }>;
+  claim_flags: ClaimFlag[]; // out-of-date lines the rep used, with the correct version
   transcript: string; // what was actually said; used to check figures, not sent to Claude
 }
 
@@ -65,7 +62,8 @@ export async function getPods(): Promise<Pod[]> {
 
 type AnalysisRow = {
   analysis_date: string; overall_score: number; insight: string | null; key_moment: string | null;
-  improvement: string | null; area_breakdown: ScoredCall['areas'] | null; call_id: string; calls: { company: string | null } | null;
+  improvement: string | null; area_breakdown: ScoredCall['areas'] | null; flags: ClaimFlag[] | null;
+  call_id: string; calls: { company: string | null } | null;
 };
 
 export async function getPodWeek(pod: Pod, weekStart: string): Promise<PodWeek> {
@@ -74,8 +72,9 @@ export async function getPodWeek(pod: Pod, weekStart: string): Promise<PodWeek> 
   const priorStart = addDays(weekStart, -28);
 
   const { data, error } = await db.from('call_analyses')
-    .select('analysis_date, overall_score, insight, key_moment, improvement, area_breakdown, call_id, calls(company)')
+    .select('analysis_date, overall_score, insight, key_moment, improvement, area_breakdown, flags, call_id, calls(company)')
     .eq('sdr_id', pod.sdr_id)
+    .eq('rubric_version', RUBRIC_VERSION) // never compare scores from different rubrics
     .gte('analysis_date', priorStart).lte('analysis_date', weekEnd)
     .order('analysis_date', { ascending: true });
   if (error) throw new Error(`Failed to load analyses for ${pod.pe_name}: ${error.message}`);
@@ -96,7 +95,7 @@ export async function getPodWeek(pod: Pod, weekStart: string): Promise<PodWeek> 
   const areaScores = (rs: AnalysisRow[], area: string) =>
     rs.map((r) => r.area_breakdown?.[area]?.score).filter((s): s is number => typeof s === 'number');
 
-  const area_avgs = Object.entries(AREAS)
+  const area_avgs = Object.entries(BEAT_LABELS)
     .map(([area, label]) => {
       const scores = areaScores(thisWeek, area);
       return { area, label, avg: avg(scores) ?? NaN, prior: avg(areaScores(prior, area)), n: scores.length };
@@ -115,6 +114,7 @@ export async function getPodWeek(pod: Pod, weekStart: string): Promise<PodWeek> 
       key_moment: r.key_moment || '',
       improvement: r.improvement || '',
       areas: r.area_breakdown || {},
+      claim_flags: r.flags || [],
       transcript: transcripts.get(r.call_id) || '',
     })),
     avg_overall: avg(thisWeek.map((r) => r.overall_score)),
@@ -135,6 +135,9 @@ export async function unscoredCallsInWeek(weekStart: string): Promise<number> {
   if (error) throw new Error(`Failed to check unscored calls: ${error.message}`);
   const ids = (calls || []).map((c) => c.id);
   if (ids.length === 0) return 0;
-  const { data: done } = await db.from('call_analyses').select('call_id').in('call_id', ids);
+  // Scored under an older rubric counts as unscored: the brief leaves it out.
+  const { data: done, error: doneError } = await db.from('call_analyses').select('call_id')
+    .in('call_id', ids).eq('rubric_version', RUBRIC_VERSION);
+  if (doneError) throw new Error(`Failed to check scored calls: ${doneError.message}`);
   return ids.length - (done || []).length;
 }

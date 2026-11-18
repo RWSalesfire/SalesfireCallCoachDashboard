@@ -1,7 +1,9 @@
 // Claude writes the coaching words; the numbers come from podBriefData.
 
 import Anthropic from '@anthropic-ai/sdk';
-import { getClient, MODEL, stripCodeFence } from '@/lib/claude';
+import { getClient, stripCodeFence } from '@/lib/claude';
+import { COACH_MODEL } from '@/lib/models';
+import { APPROVED_FIGURES, PRODUCT_FACTS } from '@/lib/scoring/facts';
 import { PodWeek } from './podBriefData';
 
 export interface PodBriefContent {
@@ -22,9 +24,10 @@ const VOICE = `Write in British English (optimise, behaviour). No em dashes. No 
 
 const POD_PROMPT = `You are a sales coach at Salesfire, a UK ecommerce optimisation platform. Write the weekly coaching brief for one pod: a Partnership Executive (who makes the calls) and their Growth Director (who coaches them in a weekly 1:1). Both read it.
 
-Use only what is in the call data. Every coaching point must cite a real call by company name and say what actually happened. Do not invent quotes. Pick the patterns that will move results most, not a list of everything.
+Use only what is in the call data. Every coaching point must cite a real call by company name and say what actually happened. Do not invent quotes. Pick the patterns that will move results most, not a list of everything. Calls are scored on the beats of a good call, and a successful call books a meeting; "Letting them talk", "Explaining the problem simply" and "Asking for the meeting" matter most.
 
-Never invent figures, percentages, results or customer stories about Salesfire. If a suggested line needs a proof point, write "[your proof point]" in its place.
+Never invent figures, percentages, results or customer stories about Salesfire. Only use these facts; if a suggested line needs a proof point not listed, write "[your proof point]" in its place:
+${PRODUCT_FACTS}
 
 Keep it short enough to read in two minutes: every field is at most two sentences, and "evidence" cites at most two calls.
 
@@ -68,7 +71,8 @@ function cleanVoice<T>(value: T): T {
 
 async function askJson<T>(prompt: string, maxTokens: number): Promise<T> {
   const response = await getClient().messages.create({
-    model: MODEL,
+    model: COACH_MODEL,
+    output_config: { effort: 'medium' },
     max_tokens: maxTokens,
     messages: [{ role: 'user', content: prompt }],
   });
@@ -88,7 +92,7 @@ const FIGURE = /£\s?\d+(?:,\d{3})*(?:\.\d+)?k?|(?<![\d.])\d+(?:\.\d+)?(?:\s?-\s
 const norm = (s: string) => s.replace(/\s/g, '').toLowerCase();
 
 function inventedFigures(output: unknown, source: string): string[] {
-  const known = new Set((source.match(FIGURE) || []).map(norm));
+  const known = new Set([...(source.match(FIGURE) || []), ...APPROVED_FIGURES].map(norm));
   const found = JSON.stringify(output).match(FIGURE) || [];
   return Array.from(new Set(found.filter((f) => !known.has(norm(f)))));
 }
@@ -110,12 +114,12 @@ export function writePodBrief(week: PodWeek): Promise<PodBriefContent> {
   const p = week.pod;
   const data = `Partnership Executive: ${p.pe_name}\nGrowth Director: ${p.gd_name}\nWeek starting ${week.week_start}: ${week.calls.length} scored calls, average ${week.avg_overall}/10 (previous 4 weeks: ${week.prior_avg_overall ?? 'no data'}).\nSkill averages, weakest first: ${areaLines(week)}\n\nCalls:\n${callLines(week)}`;
   const said = week.calls.map((c) => c.transcript).join('\n');
-  return askGrounded<PodBriefContent>(`${POD_PROMPT}\n\n${data}`, said, 1500);
+  return askGrounded<PodBriefContent>(`${POD_PROMPT}\n\n${data}`, said, 16000);
 }
 
 export function writeTeamTheme(weeks: PodWeek[]): Promise<TeamThemeContent> {
   const body = weeks.filter((w) => w.calls.length > 0)
     .map((w) => `## ${w.pod.pe_name}\n${callLines(w)}`).join('\n\n');
   const said = weeks.flatMap((w) => w.calls.map((c) => c.transcript)).join('\n');
-  return askGrounded<TeamThemeContent>(`${TEAM_PROMPT}\n\n${body}`, said, 1500);
+  return askGrounded<TeamThemeContent>(`${TEAM_PROMPT}\n\n${body}`, said, 16000);
 }

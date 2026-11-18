@@ -1,182 +1,114 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { analyzeCallTranscript } from '@/lib/claude';
-import { Call } from '@/lib/supabase';
+import { scoreCall } from '@/lib/scoring/scoreCall';
+import { RUBRIC_VERSION } from '@/lib/scoring/rubric';
 
 const MAX_CALLS_PER_RUN = 3;
 const PAGE_SIZE = 1000;
-
-// Map score fields to their area_breakdown keys
-const SCORE_TO_AREA: Record<string, string> = {
-  gatekeeper_score: 'gatekeeper',
-  opener_score: 'opener',
-  personalisation_score: 'personalisation',
-  discovery_score: 'discovery',
-  call_control_score: 'callControl',
-  tone_energy_score: 'toneEnergy',
-  value_prop_score: 'valueProp',
-  objections_score: 'objections',
-  close_score: 'close',
-};
-
-const AREA_LABELS: Record<string, string> = {
-  gatekeeper: 'Gatekeeper',
-  opener: 'Opener',
-  personalisation: 'Personalisation',
-  discovery: 'Discovery',
-  callControl: 'Call Control',
-  toneEnergy: 'Tone & Energy',
-  valueProp: 'Value Prop',
-  objections: 'Objections',
-  close: 'Close',
-};
-
-/**
- * Ensure every non-null score has a corresponding area_breakdown entry.
- * If Claude omitted an area, insert a minimal placeholder so the UI can render it.
- */
-function ensureCompleteBreakdown(
-  analysis: Record<string, unknown>,
-): Record<string, { score: number; why: string; well: string; improve: string; try_next: string }> {
-  const breakdown = (analysis.area_breakdown || {}) as Record<
-    string,
-    { score: number; why: string; well: string; improve: string; try_next: string }
-  >;
-
-  for (const [scoreField, areaKey] of Object.entries(SCORE_TO_AREA)) {
-    const scoreValue = analysis[scoreField];
-    if (typeof scoreValue === 'number' && !(areaKey in breakdown)) {
-      const label = AREA_LABELS[areaKey] || areaKey;
-      breakdown[areaKey] = {
-        score: scoreValue,
-        why: `${label} was scored ${scoreValue}/10.`,
-        well: 'Analysis pending for this area.',
-        improve: 'Analysis pending for this area.',
-        try_next: `Focus on improving ${label} in your next calls.`,
-      };
-    }
-  }
-
-  return breakdown;
-}
+// Calls scored under an older rubric are re-scored if they're this recent, so
+// the brief's "previous 4 weeks" comparison is like for like.
+const RESCORE_DAYS = 28;
 
 export interface AnalyzeResult {
   processed: number;
   succeeded: number;
   failed: number;
+  rescored: number;
   results: { call_id: string; success: boolean; error?: string }[];
 }
 
-// Each analysis takes ~60s, so callers with a time budget pass a smaller limit.
-export async function runAnalyzeCalls(limit: number = MAX_CALLS_PER_RUN): Promise<AnalyzeResult> {
-  if (limit <= 0) return { processed: 0, succeeded: 0, failed: 0, results: [] };
-  const supabase = getSupabaseAdmin();
-
-  // Get IDs of calls that already have analyses. Paged, because PostgREST caps
-  // a response at 1,000 rows.
-  const analyzedCallIds = new Set<string>();
+// New calls (transcribed, never scored), oldest first.
+async function newCallIds(limit: number): Promise<string[]> {
+  const db = getSupabaseAdmin();
+  const analysed = new Set<string>();
   for (let from = 0; ; from += PAGE_SIZE) {
-    const { data, error } = await supabase
-      .from('call_analyses')
-      .select('call_id')
-      .range(from, from + PAGE_SIZE - 1);
+    const { data, error } = await db.from('call_analyses').select('call_id').range(from, from + PAGE_SIZE - 1);
     if (error) throw new Error(`Failed to fetch analyses: ${error.message}`);
-    (data || []).forEach((a: { call_id: string }) => analyzedCallIds.add(a.call_id));
+    (data || []).forEach((a: { call_id: string }) => analysed.add(a.call_id));
     if (!data || data.length < PAGE_SIZE) break;
   }
 
-  // Find calls with transcripts that haven't been analysed yet. Filtered here,
-  // not with `not.in.(...)`: every analysed ID in the URL broke the request
-  // with "Bad Request" once there were ~640 of them (Oct 2026).
-  const pendingIds: string[] = [];
-  for (let from = 0; pendingIds.length < limit; from += PAGE_SIZE) {
-    const { data, error } = await supabase
-      .from('calls')
-      .select('id')
-      .not('transcript', 'is', null)
-      .neq('transcript', '')
+  // Filtered in code, not with `not.in.(...)`: every analysed ID in the URL
+  // broke the request with "Bad Request" once there were ~640 (Oct 2026).
+  const ids: string[] = [];
+  for (let from = 0; ids.length < limit; from += PAGE_SIZE) {
+    const { data, error } = await db.from('calls').select('id')
+      .not('transcript', 'is', null).neq('transcript', '')
       .order('created_at', { ascending: true })
       .range(from, from + PAGE_SIZE - 1);
     if (error) throw new Error(`Failed to fetch calls: ${error.message}`);
     for (const c of data || []) {
-      if (!analyzedCallIds.has(c.id)) pendingIds.push(c.id);
-      if (pendingIds.length >= limit) break;
+      if (!analysed.has(c.id)) ids.push(c.id);
+      if (ids.length >= limit) break;
     }
     if (!data || data.length < PAGE_SIZE) break;
   }
+  return ids;
+}
 
-  if (pendingIds.length === 0) {
-    return { processed: 0, succeeded: 0, failed: 0, results: [] };
-  }
+// Recent calls scored under an older rubric, newest first (the coming brief's
+// week gets done first).
+async function rescoreCallIds(limit: number): Promise<string[]> {
+  if (limit <= 0) return [];
+  const since = new Date(Date.now() - RESCORE_DAYS * 86_400_000).toISOString().split('T')[0];
+  const { data, error } = await getSupabaseAdmin().from('call_analyses').select('call_id')
+    .lt('rubric_version', RUBRIC_VERSION).gte('analysis_date', since)
+    .order('analysis_date', { ascending: false }).limit(limit);
+  if (error) throw new Error(`Failed to fetch calls to re-score: ${error.message}`);
+  return (data || []).map((r: { call_id: string }) => r.call_id);
+}
 
-  const { data: callsToAnalyze, error: fetchError } = await supabase
-    .from('calls')
-    .select('*')
-    .in('id', pendingIds)
-    .order('created_at', { ascending: true });
+// Each call takes up to ~75s, so callers with a time budget pass a smaller limit.
+export async function runAnalyzeCalls(limit: number = MAX_CALLS_PER_RUN): Promise<AnalyzeResult> {
+  const empty: AnalyzeResult = { processed: 0, succeeded: 0, failed: 0, rescored: 0, results: [] };
+  if (limit <= 0) return empty;
+  const db = getSupabaseAdmin();
 
-  if (fetchError) {
-    throw new Error(`Failed to fetch calls: ${fetchError.message}`);
-  }
+  const fresh = await newCallIds(limit);
+  const rescore = await rescoreCallIds(limit - fresh.length);
+  const ids = [...fresh, ...rescore];
+  if (ids.length === 0) return empty;
 
-  if (!callsToAnalyze || callsToAnalyze.length === 0) {
-    return { processed: 0, succeeded: 0, failed: 0, results: [] };
-  }
+  const { data: calls, error: fetchError } = await db.from('calls')
+    .select('id, sdr_id, call_date, company, prospect_name, duration_ms, disposition_label, transcript')
+    .in('id', ids);
+  if (fetchError) throw new Error(`Failed to fetch calls: ${fetchError.message}`);
 
-  const results: { call_id: string; success: boolean; error?: string }[] = [];
-
-  for (const call of callsToAnalyze) {
+  const results: AnalyzeResult['results'] = [];
+  for (const call of calls || []) {
     try {
-      const analysis = await analyzeCallTranscript(call as Call);
-
-      // Ensure all scored areas have breakdown entries (safety net for incomplete Claude responses)
-      const completeBreakdown = ensureCompleteBreakdown(analysis as unknown as Record<string, unknown>);
-
-      const roundInt = (v: number | null | undefined) => v != null ? Math.round(v) : null;
-
-      const { error: insertError } = await supabase
-        .from('call_analyses')
-        .insert({
-          call_id: call.id,
-          sdr_id: call.sdr_id,
-          analysis_date: call.call_date,
-          outcome: analysis.outcome,
-          overall_score: analysis.overall_score,
-          gatekeeper_score: analysis.gatekeeper_score,
-          opener_score: analysis.opener_score,
-          personalisation_score: analysis.personalisation_score,
-          discovery_score: analysis.discovery_score,
-          call_control_score: analysis.call_control_score,
-          tone_energy_score: analysis.tone_energy_score,
-          value_prop_score: analysis.value_prop_score,
-          objections_score: analysis.objections_score,
-          close_score: analysis.close_score,
-          insight: analysis.insight,
-          key_moment: analysis.key_moment,
-          improvement: analysis.improvement,
-          talk_time_percent: analysis.talk_time_percent,
-          talk_speed_wpm: roundInt(analysis.talk_speed_wpm),
-          longest_monologue_secs: roundInt(analysis.longest_monologue_secs),
-          customer_story_secs: roundInt(analysis.customer_story_secs),
-          patience_secs: roundInt(analysis.patience_secs),
-          area_breakdown: completeBreakdown,
-          raw_analysis: analysis,
-        });
-
-      if (insertError) {
-        console.error(`Error inserting analysis for call ${call.id}:`, insertError);
-        results.push({ call_id: call.id, success: false, error: insertError.message });
-      } else {
-        results.push({ call_id: call.id, success: true });
-      }
+      const s = await scoreCall(call);
+      const { error } = await db.from('call_analyses').upsert({
+        call_id: call.id,
+        sdr_id: call.sdr_id,
+        analysis_date: call.call_date,
+        rubric_version: RUBRIC_VERSION,
+        outcome: s.outcome,
+        overall_score: s.overall_score,
+        insight: s.insight,
+        key_moment: s.key_moment,
+        improvement: s.improvement,
+        area_breakdown: s.beats,
+        flags: s.claim_flags,
+        raw_analysis: s,
+        // v1 columns: no longer scored (v2 beats live in area_breakdown), and
+        // the old talk-time "metrics" were guesses from an untimed transcript.
+        gatekeeper_score: null, opener_score: null, personalisation_score: null, discovery_score: null,
+        call_control_score: null, tone_energy_score: null, value_prop_score: null, objections_score: null,
+        close_score: null, talk_time_percent: null, talk_speed_wpm: null, longest_monologue_secs: null,
+        customer_story_secs: null, patience_secs: null,
+      }, { onConflict: 'call_id' });
+      results.push(error ? { call_id: call.id, success: false, error: error.message } : { call_id: call.id, success: true });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      console.error(`Error analyzing call ${call.id}:`, message);
-      results.push({ call_id: call.id, success: false, error: message });
+      results.push({ call_id: call.id, success: false, error: err instanceof Error ? err.message : 'Unknown error' });
     }
   }
 
   const succeeded = results.filter((r) => r.success).length;
-  const failed = results.filter((r) => !r.success).length;
-
-  return { processed: results.length, succeeded, failed, results };
+  return {
+    processed: results.length,
+    succeeded,
+    failed: results.length - succeeded,
+    rescored: results.filter((r) => r.success && rescore.includes(r.call_id)).length,
+    results,
+  };
 }
