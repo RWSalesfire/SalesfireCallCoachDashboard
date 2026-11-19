@@ -80,7 +80,7 @@ export function judgeScores(scores: number[], day: string): string | null {
   if (scores.length < 3) return null;
   const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
   if (new Set(scores).size === 1) return `scoring looks broken: all ${scores.length} calls from ${day} scored exactly ${scores[0]}.`;
-  if (avg < 1.5 || avg > 8.5) return `scoring looks off: ${scores.length} calls from ${day} averaged ${avg.toFixed(1)} (normal is about 3-6). Check the rubric.`;
+  if (avg < 1.5 || avg > 8.5) return `scoring looks off: ${scores.length} calls from ${day} averaged ${avg.toFixed(1)} (normal is about 2-7). Check the rubric.`;
   return null;
 }
 

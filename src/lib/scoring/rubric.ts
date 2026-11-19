@@ -1,11 +1,22 @@
-// Scoring rubric v2 (agreed with Russell 18 Nov 2026).
+// Scoring rubric v2 (agreed with Russell 18 Nov 2026; result added 19 Nov).
 //
 // Calls are scored on the beats of a good Partnership Executive call, not on
-// following a script word for word. The scale is tough: 7 is a call worth
-// playing in a huddle, most calls land 4-6. A successful call books a meeting.
-// The overall score is calculated in code from these weights, never by the model.
+// following a script word for word. Beats are scored tough (most land 4-6).
+// The overall score is half the result (a booked meeting) and half the craft
+// (weighted beats), so a booked meeting with a decent call reaches about 7.
+// It is calculated in code, never by the model.
 
 export const RUBRIC_VERSION = 2;
+
+export type Outcome = 'demo' | 'email' | 'not_interested' | 'warm_lead' | 'other';
+
+// Points for what the call achieved. A meeting counts only with a day and time agreed.
+export const OUTCOME_POINTS: Record<Outcome, number> = {
+  demo: 10, warm_lead: 5, email: 3, not_interested: 2, other: 2,
+};
+
+// Share of the overall score that comes from the result; the rest is craft.
+export const RESULT_WEIGHT = 0.5;
 
 export interface Beat {
   key: string;
@@ -93,8 +104,10 @@ export const BEATS: Beat[] = [
 
 export const BEAT_LABELS: Record<string, string> = Object.fromEntries(BEATS.map((b) => [b.key, b.label]));
 
-// Weighted average of the beats that were scored, rounded to 1 decimal.
-export function overallScore(scores: Record<string, number | null>): number | null {
+const round1 = (n: number) => Math.round(n * 10) / 10;
+
+// Craft: weighted average of the beats that were scored, rounded to 1 decimal.
+export function craftScore(scores: Record<string, number | null>): number | null {
   let total = 0;
   let weights = 0;
   for (const beat of BEATS) {
@@ -103,7 +116,15 @@ export function overallScore(scores: Record<string, number | null>): number | nu
     total += s * beat.weight;
     weights += beat.weight;
   }
-  return weights ? Math.round((total / weights) * 10) / 10 : null;
+  return weights ? round1(total / weights) : null;
+}
+
+// Overall: blend of the result and the craft. Null when no beat was scored.
+export function overallScore(scores: Record<string, number | null>, outcome: Outcome): number | null {
+  const craft = craftScore(scores);
+  if (craft == null) return null;
+  const result = OUTCOME_POINTS[outcome] ?? OUTCOME_POINTS.other;
+  return round1(RESULT_WEIGHT * result + (1 - RESULT_WEIGHT) * craft);
 }
 
 export function rubricText(): string {

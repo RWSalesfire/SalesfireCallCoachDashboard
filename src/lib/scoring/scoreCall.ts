@@ -7,10 +7,10 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { getClient } from '@/lib/claude';
 import { COACH_MODEL } from '@/lib/models';
-import { BEATS, overallScore, rubricText } from './rubric';
+import { BEATS, craftScore, overallScore, rubricText, Outcome } from './rubric';
 import { PRODUCT_FACTS, OUT_OF_DATE_CLAIMS, ClaimType } from './facts';
 
-export type Outcome = 'demo' | 'email' | 'not_interested' | 'warm_lead' | 'other';
+export type { Outcome };
 
 export interface BeatResult { score: number; why: string; well: string; improve: string; try_next: string }
 export interface ClaimFlag { type: ClaimType; said: string; correct_line: string }
@@ -20,7 +20,8 @@ const claimList = CLAIM_TYPES.map((t) => `- ${t}: ${OUT_OF_DATE_CLAIMS[t].looks_
 
 export interface CallScore {
   outcome: Outcome;
-  overall_score: number | null;
+  overall_score: number | null; // half result, half craft
+  craft_score: number | null;   // weighted beats only
   beats: Record<string, BeatResult>; // only beats that were scored
   insight: string;
   key_moment: string;
@@ -145,7 +146,8 @@ export async function scoreCall(call: CallToScore): Promise<CallScore> {
 
   return {
     outcome: raw.outcome,
-    overall_score: overallScore(scores),
+    overall_score: overallScore(scores, raw.outcome),
+    craft_score: craftScore(scores),
     beats,
     insight: raw.insight,
     key_moment: raw.key_moment,
