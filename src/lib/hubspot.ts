@@ -84,9 +84,17 @@ function getAccessToken(): string {
   return token;
 }
 
+// HubSpot returns the odd transient 500/502/503 or a 429 burst limit; a
+// short retry clears these instead of raising a false alert.
+const RETRY_DELAYS_MS = [1000, 3000];
+
+function isRetryable(status: number): boolean {
+  return status === 429 || status >= 500;
+}
+
 async function hubspotFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const url = `${HUBSPOT_API_BASE}${path}`;
-  const res = await fetch(url, {
+  const request = () => fetch(url, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -94,6 +102,13 @@ async function hubspotFetch<T>(path: string, options: RequestInit = {}): Promise
       ...options.headers,
     },
   });
+
+  let res = await request();
+  for (const delay of RETRY_DELAYS_MS) {
+    if (res.ok || !isRetryable(res.status)) break;
+    await new Promise((r) => setTimeout(r, delay));
+    res = await request();
+  }
 
   if (!res.ok) {
     const body = await res.text().catch(() => '');
