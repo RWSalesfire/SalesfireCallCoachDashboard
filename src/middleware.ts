@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { SESSION_COOKIE, verifySessionToken } from '@/lib/session';
 
 // Routes that don't require authentication
 const PUBLIC_PATHS = ['/login', '/api/auth/login', '/api/auth/logout'];
 const API_PATHS = ['/api/cron/', '/api/webhooks/'];
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow public paths and API routes with their own auth
@@ -16,9 +17,12 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check for auth session cookie
-  const session = request.cookies.get('auth_session');
-  if (!session?.value) {
+  // Require a validly signed, unexpired session cookie (see src/lib/session.ts)
+  const session = request.cookies.get(SESSION_COOKIE)?.value;
+  if (!(await verifySessionToken(session))) {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('from', pathname);
     return NextResponse.redirect(loginUrl);

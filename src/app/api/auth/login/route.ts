@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createHash, randomBytes, timingSafeEqual } from 'crypto';
+import { createHash, timingSafeEqual } from 'crypto';
+import { createSessionToken, SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } from '@/lib/session';
 
 function safeCompare(a: string, b: string): boolean {
   const bufA = createHash('sha256').update(a).digest();
@@ -24,15 +25,15 @@ export async function POST(request: NextRequest) {
     safeCompare(username ?? '', expectedUsername) &&
     safeCompare(password ?? '', expectedPassword)
   ) {
-    const token = randomBytes(32).toString('hex');
+    const token = await createSessionToken();
     const response = NextResponse.json({ success: true });
 
-    response.cookies.set('auth_session', token, {
+    response.cookies.set(SESSION_COOKIE, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: SESSION_MAX_AGE_SECONDS,
     });
 
     return response;
